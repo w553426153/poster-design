@@ -304,8 +304,16 @@ const sendMessage = async () => {
     }
 
     const resp = await createPosterTask(payload)
-    if (resp.code !== 0) {
+    if (resp.code !== 0 && resp.code !== 200) {
       throw new Error(resp.message || '任务创建失败')
+    }
+    const directUrls = resp.data?.image_urls || resp.image_urls
+    if (directUrls?.length) {
+      appendMessage({ id: crypto.randomUUID(), role: 'ai', type: 'text', content: '生成完成，已返回预览。' })
+      directUrls.forEach((url) => appendMessage({ id: crypto.randomUUID(), role: 'ai', type: 'image', content: url }))
+      sending.value = false
+      referenceImages.value = []
+      return
     }
     const taskId = resp.data?.task_id
     if (!taskId) {
@@ -366,7 +374,7 @@ const startPollingTask = (taskId: string, statusMessageId: string) => {
       }
       const status = resp.data?.status || 'unknown'
       if (['done', 'success', 'finished'].includes(status)) {
-        appendMessage({ id: crypto.randomUUID(), role: 'ai', type: 'text', content: '生成完成，已返回预览。' })
+        updateMessageContent(statusMessageId, '生成完成，已返回预览。')
         const urls = resp.data?.image_urls || []
         if (urls.length) {
           urls.forEach((url) => {
@@ -376,6 +384,7 @@ const startPollingTask = (taskId: string, statusMessageId: string) => {
           appendMessage({ id: crypto.randomUUID(), role: 'ai', type: 'text', content: '任务完成，但暂未获取到图片。' })
         }
         sending.value = false
+        referenceImages.value = []
         clearPolling()
         return
       }
@@ -425,22 +434,6 @@ const syncBaseImagesToOss = async (images: SelectedPosterImage[]) => {
       target.ossUrl = resp.oss_url
     }
   }
-}
-
-function generatePosterCategories() {
-  const presets = [
-    { id: 'tech', name: '科技风' },
-    { id: 'fashion', name: '时尚新品' },
-    { id: 'sport', name: '运动赛事' },
-  ]
-  return presets.map((preset) => ({
-    ...preset,
-    examples: Array.from({ length: 40 }).map((_, idx) => ({
-      id: `${preset.id}-${idx}`,
-      title: `${preset.name} ${idx + 1}`,
-      cover: `https://picsum.photos/seed/${preset.id}-${idx}/300/420`,
-    })),
-  }))
 }
 
 onBeforeUnmount(() => {
@@ -596,7 +589,7 @@ onBeforeUnmount(() => {
 }
 .reference-chip {
   display: flex;
-  align-items: center;
+  alignments: center;
   gap: 0.6rem;
   background: #f5f6f8;
   padding: 0.35rem 0.75rem;
@@ -617,7 +610,7 @@ onBeforeUnmount(() => {
 }
 .chip-label {
   font-size: 11px;
-  padding: 0 6px;
+  padding: 0 6 px;
   border-radius: 999px;
   color: #fff;
   align-self: flex-start;

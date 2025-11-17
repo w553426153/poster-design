@@ -48,6 +48,10 @@
             </template>
             <template v-else>
               <img :src="message.content" alt="chat image" />
+              <div class="img-actions">
+                <el-button text size="small" @click="downloadImage(message.content)">下载</el-button>
+                <el-button text type="primary" size="small" @click="addToCanvas(message.content)">添加到画布</el-button>
+              </div>
             </template>
           </div>
         </div>
@@ -116,6 +120,9 @@ import { Close, UploadFilled } from '@element-plus/icons-vue'
 import appConfig from '@/config'
 import apiRequest from '@/utils/axios'
 import { createPosterTask, getPosterTask } from '@/api/poster'
+import { useRouter } from 'vue-router'
+import { useWidgetStore } from '@/store'
+import wImageSetting from '@/components/modules/widgets/wImage/wImageSetting'
 
 interface ChatMessage {
   id: string
@@ -208,6 +215,8 @@ const displayedExamples = computed(() => {
 })
 
 const canAddMoreImages = computed(() => referenceImages.value.length < MAX_REFERENCE_IMAGES)
+const router = useRouter()
+const widgetStore = useWidgetStore()
 
 const appendMessage = (message: ChatMessage) => {
   messages.push(message)
@@ -304,7 +313,8 @@ const sendMessage = async () => {
     }
 
     const resp = await createPosterTask(payload)
-    if (resp.code !== 0 && resp.code !== 200) {
+    const successCode = resp.code === 0 || resp.code === 200 || resp.stat === 1
+    if (!successCode) {
       throw new Error(resp.message || '任务创建失败')
     }
     const directUrls = resp.data?.image_urls || resp.image_urls
@@ -436,6 +446,39 @@ const syncBaseImagesToOss = async (images: SelectedPosterImage[]) => {
   }
 }
 
+const downloadImage = async (url: string) => {
+  try {
+    const res = await fetch(url)
+    const blob = await res.blob()
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = `poster-${Date.now()}.png`
+    link.click()
+    URL.revokeObjectURL(link.href)
+  } catch (error) {
+    ElMessage.error(formatError(error))
+  }
+}
+
+const addToCanvas = async (url: string) => {
+  const route = router.currentRoute.value
+  if (route.name !== 'Home') {
+    router.push({ name: 'Home' })
+  }
+  const img = new Image()
+  img.crossOrigin = 'anonymous'
+  img.src = url
+  img.onload = () => {
+    const setting = JSON.parse(JSON.stringify(wImageSetting))
+    setting.url = url
+    setting.width = img.width
+    setting.height = img.height
+    widgetStore.addWidget(setting)
+    ElMessage.success('已添加到画布')
+  }
+  img.onerror = () => ElMessage.error('加载图片失败')
+}
+
 onBeforeUnmount(() => {
   clearPolling()
 })
@@ -481,8 +524,8 @@ onBeforeUnmount(() => {
 }
 .example-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 0.8rem;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
   margin-top: 1rem;
 }
 .example-card {
@@ -505,7 +548,7 @@ onBeforeUnmount(() => {
 }
 .example-card img {
   width: 100%;
-  height: 120px;
+  height: 240px;
   object-fit: cover;
 }
 .example-card p {
@@ -555,8 +598,13 @@ onBeforeUnmount(() => {
   color: #fff;
 }
 .bubble img {
-  max-width: 220px;
+  max-width: 260px;
   border-radius: 8px;
+}
+.img-actions {
+  margin-top: 0.4rem;
+  display: flex;
+  gap: 0.5rem;
 }
 .reference-strip {
   padding: 0.8rem 1.5rem;

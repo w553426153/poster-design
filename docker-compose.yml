@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: back_end/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./back_end:/app/back_end
+      - backend_venv:/app/back_end/.venv
+      - uploads:/app/uploads
+    environment:
+      - DEBUG=True
+      - CORS_ORIGINS=["http://localhost:8080","http://127.0.0.1:8080"]
+      - UPLOAD_FOLDER=/app/uploads
+    restart: unless-stopped
+    networks:
+      - poster-network
+
+  frontend:
+    build:
+      context: ./front_end
+      dockerfile: docker/web/Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - poster-network
+
+networks:
+  poster-network:
+    driver: bridge
+
+volumes:
+  uploads:
+  backend_venv:

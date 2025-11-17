@@ -7,7 +7,7 @@
         引用区：{{ referenceImages.length }}/{{ MAX_REFERENCE_IMAGES }}
         <span>引用+底图最多 {{ MAX_REFERENCE_IMAGES }} 张</span>
       </div>
-<el-tabs v-model="activeTab" class="poster-tabs">
+      <el-tabs v-model="activeTab" class="poster-tabs">
         <el-tab-pane
           v-for="category in posterCategories"
           :key="category.id"
@@ -109,6 +109,7 @@
 </template>
 
 <script lang="ts" setup>
+import posterTemplates from '@/assets/data/poster_templates.json'
 import { computed, nextTick, onBeforeUnmount, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Close, UploadFilled } from '@element-plus/icons-vue'
@@ -127,6 +128,12 @@ interface PosterExample {
   id: string
   title: string
   cover: string
+}
+
+interface PosterTemplate {
+  url: string
+  title: string
+  type: string
 }
 
 type ImageKind = 'reference' | 'base'
@@ -149,6 +156,26 @@ const apiHost = appConfig.API_URL && appConfig.API_URL.trim().length
   : (typeof window !== 'undefined' ? window.location.origin : '')
 const apiBase = apiHost.replace(/\/$/, '')
 
+const categoryOrder = ['产品类', '品牌类', '节气类']
+
+const buildPosterCategories = () => {
+  const groups: Record<string, PosterExample[]> = {
+    产品类: [],
+    品牌类: [],
+    节气类: [],
+  }
+  ;(posterTemplates as PosterTemplate[]).forEach((tpl, idx) => {
+    if (groups[tpl.type]) {
+      groups[tpl.type].push({ id: `${tpl.type}-${idx}`, title: tpl.title, cover: tpl.url })
+    }
+  })
+  return categoryOrder.map((type) => ({
+    id: type,
+    name: type,
+    examples: groups[type] || [],
+  }))
+}
+
 const messages = reactive<ChatMessage[]>([
   { id: crypto.randomUUID(), role: 'ai', type: 'text', content: '你好，我是海报生成助手。告诉我你的想法或上传参考图，我会给出建议。' },
 ])
@@ -161,8 +188,8 @@ const messageContainer = ref<HTMLDivElement | null>(null)
 const referenceImages = ref<SelectedPosterImage[]>([])
 const pollTimer = ref<number | null>(null)
 
-const posterCategories = reactive(generatePosterCategories())
-const activeTab = ref(posterCategories[0]?.id || 'default')
+const posterCategories = reactive(buildPosterCategories())
+const activeTab = ref(posterCategories[0]?.id || '产品类')
 const pageMap = reactive<Record<string, number>>({})
 posterCategories.forEach((cat) => (pageMap[cat.id] = 1))
 
@@ -339,7 +366,7 @@ const startPollingTask = (taskId: string, statusMessageId: string) => {
       }
       const status = resp.data?.status || 'unknown'
       if (['done', 'success', 'finished'].includes(status)) {
-        updateMessageContent(statusMessageId, '生成完成，已返回预览。')
+        appendMessage({ id: crypto.randomUUID(), role: 'ai', type: 'text', content: '生成完成，已返回预览。' })
         const urls = resp.data?.image_urls || []
         if (urls.length) {
           urls.forEach((url) => {

@@ -153,6 +153,9 @@ const showPosterModal = ref(false)
 const openPosterHandler = () => {
   showPosterModal.value = true
 }
+const closePosterHandler = () => {
+  showPosterModal.value = false
+}
 
 const beforeUnload = function (e: Event): any {
   if (dHistoryStack.value.changes.length > 0) {
@@ -210,6 +213,7 @@ onMounted(() => {
   document.addEventListener('keyup', handleKeyup(controlStore, checkCtrl), false)
   loadData()
   eventBus.on('openPosterGenerate', openPosterHandler)
+  eventBus.on('closePosterGenerate', closePosterHandler)
 })
 
 onBeforeUnmount(() => {
@@ -219,6 +223,7 @@ onBeforeUnmount(() => {
   document.removeEventListener('keyup', handleKeyup(controlStore, checkCtrl), false)
   document.oncontextmenu = null
   eventBus.off('openPosterGenerate', openPosterHandler)
+  eventBus.off('closePosterGenerate', closePosterHandler)
 })
 
 function handleHistory(data: "undo" | "redo") {

@@ -115,6 +115,7 @@
 </template>
 
 <script lang="ts" setup>
+// 导入依赖
 import posterTemplates from '@/assets/data/poster_templates.json'
 import { computed, nextTick, onBeforeUnmount, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
@@ -125,7 +126,9 @@ import { createPosterTask, getPosterTask } from '@/api/poster'
 import { useRouter } from 'vue-router'
 import { useWidgetStore } from '@/store'
 import wImageSetting from '@/components/modules/widgets/wImage/wImageSetting'
+import eventBus from '@/utils/plugins/eventBus'
 
+// 类型定义
 interface ChatMessage {
   id: string
   role: 'user' | 'ai'
@@ -157,6 +160,7 @@ interface SelectedPosterImage {
   ossUrl?: string
 }
 
+// 常量定义
 const MAX_REFERENCE_IMAGES = 2
 const POLL_INTERVAL = 5000
 const DEFAULT_OSS_FOLDER = 'poster/base'
@@ -167,6 +171,7 @@ const apiBase = apiHost.replace(/\/$/, '')
 
 const categoryOrder = ['产品类', '品牌类', '节气类']
 
+// 构建海报分类数据
 const buildPosterCategories = () => {
   const groups: Record<string, PosterExample[]> = {
     产品类: [],
@@ -185,6 +190,7 @@ const buildPosterCategories = () => {
   }))
 }
 
+// 响应式数据
 const messages = reactive<ChatMessage[]>([
   { id: crypto.randomUUID(), role: 'ai', type: 'text', content: '你好，我是海报生成助手。告诉我你的想法或上传参考图，我会给出建议。' },
 ])
@@ -202,24 +208,26 @@ const activeTab = ref(posterCategories[0]?.id || '产品类')
 const pageMap = reactive<Record<string, number>>({})
 posterCategories.forEach((cat) => (pageMap[cat.id] = 1))
 
+// 计算属性
 const currentCategory = computed(() => posterCategories.find((cat) => cat.id === activeTab.value))
 const currentPage = computed(() => (currentCategory.value ? pageMap[currentCategory.value.id] : 1))
 const totalPages = computed(() => {
   const examples = currentCategory.value?.examples || []
-  return Math.max(1, Math.ceil(examples.length / 20))
+  return Math.max(1, Math.ceil(examples.length / 8)) // 每页显示8个（因卡片放大调整）
 })
 const displayedExamples = computed(() => {
   const cat = currentCategory.value
   if (!cat) return []
   const page = currentPage.value
-  const start = (page - 1) * 20
-  return cat.examples.slice(start, start + 20)
+  const start = (page - 1) * 8 // 每页显示8个
+  return cat.examples.slice(start, start + 8)
 })
 
 const canAddMoreImages = computed(() => referenceImages.value.length < MAX_REFERENCE_IMAGES)
 const router = useRouter()
 const widgetStore = useWidgetStore()
 
+// 消息处理函数
 const appendMessage = (message: ChatMessage) => {
   messages.push(message)
   nextTick(() => {
@@ -233,6 +241,7 @@ const updateMessageContent = (id: string, content: string) => {
   if (target) target.content = content
 }
 
+// 图片引用区处理
 const ensureImageQuota = () => {
   if (!canAddMoreImages.value) {
     ElMessage.warning(`引用区最多只能放 ${MAX_REFERENCE_IMAGES} 张图片`)
@@ -279,6 +288,7 @@ const removeReference = (id: string) => {
   referenceImages.value = referenceImages.value.filter((img) => img.id !== id)
 }
 
+// 分页处理
 const changePage = (delta: number) => {
   const cat = currentCategory.value
   if (!cat) return
@@ -288,6 +298,7 @@ const changePage = (delta: number) => {
   }
 }
 
+// 发送消息与任务处理
 const sendMessage = async () => {
   const trimmed = inputText.value.trim()
   if (!trimmed && !referenceImages.value.length) {
@@ -346,6 +357,7 @@ const sendMessage = async () => {
   }
 }
 
+// 图片上传相关
 const uploadBaseImage = async (file: File) => {
   const formData = new FormData()
   formData.append('file', file)
@@ -361,6 +373,7 @@ const uploadBaseImage = async (file: File) => {
   }
 }
 
+// 任务轮询相关
 const statusTextMap: Record<string, string> = {
   in_queue: '排队中',
   generating: '生成中',
@@ -417,6 +430,7 @@ const startPollingTask = (taskId: string, statusMessageId: string) => {
   poll()
 }
 
+// 工具函数
 const fileToDataUrl = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
@@ -448,6 +462,7 @@ const syncBaseImagesToOss = async (images: SelectedPosterImage[]) => {
   }
 }
 
+// 图片操作
 const downloadImage = async (url: string) => {
   try {
     const res = await fetch(url)
@@ -465,7 +480,7 @@ const downloadImage = async (url: string) => {
 const addToCanvas = async (url: string) => {
   const route = router.currentRoute.value
   if (route.name !== 'Home') {
-    router.push({ name: 'Home' })
+    await router.push({ name: 'Home' })
   }
   const img = new Image()
   img.crossOrigin = 'anonymous'
@@ -473,14 +488,17 @@ const addToCanvas = async (url: string) => {
   img.onload = () => {
     const setting = JSON.parse(JSON.stringify(wImageSetting))
     setting.url = url
+    setting.imgUrl = url
     setting.width = img.width
     setting.height = img.height
-    widgetStore.addWidget(setting)
+    widgetStore.addWidget(setting, { toTop: true })
+    eventBus.emit('closePosterGenerate')
     ElMessage.success('已添加到画布')
   }
   img.onerror = () => ElMessage.error('加载图片失败')
 }
 
+// 组件卸载前清理
 onBeforeUnmount(() => {
   clearPolling()
 })
@@ -496,11 +514,11 @@ onBeforeUnmount(() => {
   height: calc(90vh - 60px);
 }
 .side-panel {
-  width: 32%;
-  min-width: 320px;
+  width: 35%;
+  min-width: 360px; /* 增加最小宽度，确保卡片显示空间 */
   background: #ffffff;
   border-right: 1px solid #e7e7e7;
-  padding: 2rem;
+  padding: 1.5rem; /* 优化内边距 */
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -551,55 +569,73 @@ onBeforeUnmount(() => {
   height: 100%;
   overflow: hidden;
   min-height: 0;
+  padding: 0.5rem 0; /* 统一内边距 */
 }
 
+/* 优化网格布局 */
 .example-grid {
-  flex:1;
+  flex: 1;
   overflow-y: auto;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-  padding-right: 1rem 0.5rem 1rem 0;
+  /* 自动适应列数，最小列宽140px */
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1rem; /* 调整间距 */
+  padding: 0.5rem;
   align-content: start;
 }
+
+/* 优化卡片样式 */
 .example-card {
   border: 1px solid #e8eaec;
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
   cursor: pointer;
-  background: #fafafa;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  height: fit-content;
+  background: #ffffff;
+  height: 100%;
+  min-height: 220px; /* 固定最小高度，确保卡片整齐 */
+  transition: none; /* 移除过渡效果 */
 }
+
+/* 彻底移除hover效果 */
 .example-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
-}
-.example-card.disabled {
-  opacity: 0.45;
-  pointer-events: none;
   transform: none;
   box-shadow: none;
 }
+
+.example-card.disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
 .example-card img {
   width: 100%;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 3 / 4; /* 保持稳定比例 */
   object-fit: cover;
   display: block;
+  border-bottom: 1px solid #f0f0f0;
 }
+
 .example-card p {
   margin: 0;
-  padding: 0.5rem;
-  font-size: 12px;
-  color: #555;
+  padding: 0.75rem;
+  font-size: 13px;
+  color: #444;
   text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 2.5em; /* 固定标题区域高度 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+
 .pagination {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  margin-top: 1rem 0;
+  margin: 1rem 0.5rem; /* 与网格内边距对齐 */
   flex-shrink: 0;
 }
 .chat-panel {

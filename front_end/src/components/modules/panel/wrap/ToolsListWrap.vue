@@ -31,18 +31,17 @@
 // import api from '@/api'
 import { ref, onMounted } from 'vue'
 
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 // import wQrcode from '../../widgets/wQrcode/wQrcode.vue'
 import imageCutout from '@/components/business/image-cutout'
 // import { useSetupMapGetters } from '@/common/hooks/mapGetters'
 import { wQrcodeSetting } from '../../widgets/wQrcode/wQrcodeSetting'
 import { storeToRefs } from 'pinia'
 import { useControlStore, useCanvasStore, useWidgetStore } from '@/store'
-
+import eventBus from '@/utils/plugins/eventBus'
 
 const controlStore = useControlStore()
 const route = useRoute()
-const router = useRouter()
 
 const loadDone = ref(false)
 const imageCutoutRef = ref<typeof imageCutout | null>(null)
@@ -82,8 +81,7 @@ function addQrcode() {
 }
 
 function openPosterGeneratePanel() {
-  const url = router.resolve({ path: '/poster-generate' }).href
-  window.open(url, '_blank')
+  eventBus.emit('openPosterGenerate')
 }
 
 function openImageCutout() {

@@ -62,6 +62,21 @@
     <Tour ref="tourRef" :steps="[ref1, ref2, ref3, ref4]" />
     <!-- 创建设计 -->
     <createDesign ref="createDesignRef" />
+    <el-dialog
+      v-model="showPosterModal"
+      width="90%"
+      top="4vh"
+      class="poster-generate-dialog"
+      :close-on-click-modal="false"
+      destroy-on-close
+    >
+      <template #header>
+        <div class="poster-modal-header">
+          <span>海报生成</span>
+        </div>
+      </template>
+      <PosterGenerate />
+    </el-dialog>
   </div>
 </template>
 
@@ -89,6 +104,8 @@ import Tour from './components/Tour.vue'
 import createDesign from '@/components/business/create-design'
 import multipleBoards from '@/components/modules/layout/multipleBoards'
 import useHistory from '@/common/hooks/history'
+import eventBus from '@/utils/plugins/eventBus'
+import PosterGenerate from '@/views/PosterGenerate.vue'
 useHistory()
 
 const ref1 = ref<ButtonInstance>()
@@ -132,6 +149,10 @@ const optionsRef = ref<typeof HeaderOptions | null>(null)
 const zoomControlRef = ref<typeof zoomControl | null>(null)
 const controlStore = useControlStore()
 const createDesignRef: Ref<typeof createDesign | null> = ref(null)
+const showPosterModal = ref(false)
+const openPosterHandler = () => {
+  showPosterModal.value = true
+}
 
 const beforeUnload = function (e: Event): any {
   if (dHistoryStack.value.changes.length > 0) {
@@ -188,6 +209,7 @@ onMounted(() => {
   document.addEventListener('keydown', handleKeydowm(controlStore, checkCtrl, instanceFn, dealCtrl), false)
   document.addEventListener('keyup', handleKeyup(controlStore, checkCtrl), false)
   loadData()
+  eventBus.on('openPosterGenerate', openPosterHandler)
 })
 
 onBeforeUnmount(() => {
@@ -196,6 +218,7 @@ onBeforeUnmount(() => {
   document.removeEventListener('keydown', handleKeydowm(controlStore, checkCtrl, instanceFn, dealCtrl), false)
   document.removeEventListener('keyup', handleKeyup(controlStore, checkCtrl), false)
   document.oncontextmenu = null
+  eventBus.off('openPosterGenerate', openPosterHandler)
 })
 
 function handleHistory(data: "undo" | "redo") {
@@ -261,4 +284,12 @@ defineExpose({
 
 <style lang="less" scoped>
 @import url('@/assets/styles/design.less');
+:global(.poster-generate-dialog .el-dialog__body) {
+  padding: 0;
+  height: calc(96vh - 100px);
+}
+.poster-modal-header {
+  font-size: 16px;
+  font-weight: 600;
+}
 </style>

@@ -2,9 +2,6 @@ from typing import List
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from poster_gen import generate_poster_pic2pic, generate_poster_text2pic, get_poster
 
 router = APIRouter(prefix="/api/poster", tags=["Poster"])

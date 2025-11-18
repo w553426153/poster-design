@@ -13,7 +13,7 @@ import multiparty from 'multiparty'
 import { filePath } from '../configs'
 import { checkCreateFolder, randomCode, send } from '../utils/tools'
 
-const FileUrl = 'http://localhost:8000/static/'
+const FileUrl = 'http://localhost:7001/static/'
 
 
 // design/list 获取模板列表（虚拟）
@@ -100,7 +100,7 @@ export async function saveTemplate(req: any, res: any) {
     fs.writeFileSync(savePath, JSON.stringify(jsonData))
     // 生成封面
     const size = width > height ? 640 : 320
-    const fetchScreenshotUrl = `http://localhost:8000/api/screenshots?tempid=${id}&tempType=${type}&width=${width}&height=${height}&type=cover&size=${size}&quality=75`
+    const fetchScreenshotUrl = `http://localhost:7001/api/screenshots?tempid=${id}&tempType=${type}&width=${width}&height=${height}&type=cover&size=${size}&quality=75`
     await axios.get(fetchScreenshotUrl, { responseType: 'arraybuffer' })
     // 保存到其他地方可以设置 responseType: 'arraybuffer' 后操作buffer，这里只为了得到封面，发起请求就可以了
     if (isAdd) {

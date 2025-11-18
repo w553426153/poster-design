@@ -9,7 +9,7 @@ import fs from 'fs'
 import path from 'path'
 import imageSize from 'image-size'
 import { filePath as StaticPath } from '../configs'
-const FileUrl = 'http://localhost:8000/static/'
+const FileUrl = 'http://localhost:7001/static/'
 
 export function copyFile(sourceFile: string, destinationFile: string): Promise<void> {
   return new Promise((resolve, reject) => {

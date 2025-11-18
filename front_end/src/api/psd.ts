@@ -1,9 +1,8 @@
 import fetch from '@/utils/axios'
 import { ElMessage } from 'element-plus'
-import config from '@/config'
 
-// API base URL - using configured API_URL from config.ts
-const API_BASE_URL = `${config.API_URL}/api`
+// API base URL - should be configured based on environment
+const API_BASE_URL = process.env.VUE_APP_API_URL || 'http://localhost:8000/api'
 
 export interface PSDProcessOptions {
   skipOcr?: boolean

@@ -1,5 +1,5 @@
 <template>
-  <div class="poster-generate">
+  <div class="poster-generate modal-mode">
     <aside class="side-panel">
       <h2>海报生成助手</h2>
       <p class="desc">选择参考模板或上传图片，帮助 AI 更好理解你的需求。</p>
@@ -14,23 +14,25 @@
           :name="category.id"
           :label="category.name"
         >
-          <div class="example-grid">
-            <div
-              v-for="example in displayedExamples"
-              :key="example.id"
-              class="example-card"
-              :class="{ disabled: !canAddMoreImages }"
-              :title="!canAddMoreImages ? '最多只能添加两张图片' : '点击引用该模板'"
-              @click="handleExampleSelect(example)"
-            >
-              <img :src="example.cover" :alt="example.title" />
-              <p>{{ example.title }}</p>
+          <div class="tab-content-scroll">
+            <div class="example-grid">
+              <div
+                v-for="example in displayedExamples"
+                :key="example.id"
+                class="example-card"
+                :class="{ disabled: !canAddMoreImages }"
+                :title="!canAddMoreImages ? '最多只能添加两张图片' : '点击引用该模板'"
+                @click="handleExampleSelect(example)"
+              >
+                <img :src="example.cover" :alt="example.title" />
+                <p>{{ example.title }}</p>
+              </div>
             </div>
-          </div>
-          <div class="pagination" v-if="totalPages > 1">
-            <el-button size="small" @click="changePage(-1)" :disabled="currentPage <= 1">上一页</el-button>
-            <span>{{ currentPage }} / {{ totalPages }}</span>
-            <el-button size="small" @click="changePage(1)" :disabled="currentPage >= totalPages">下一页</el-button>
+            <div class="pagination" v-if="totalPages > 1">
+              <el-button size="small" @click="changePage(-1)" :disabled="currentPage <= 1">上一页</el-button>
+              <span>{{ currentPage }} / {{ totalPages }}</span>
+              <el-button size="small" @click="changePage(1)" :disabled="currentPage >= totalPages">下一页</el-button>
+            </div>
           </div>
         </el-tab-pane>
       </el-tabs>
@@ -487,11 +489,14 @@ onBeforeUnmount(() => {
 <style scoped lang="less">
 .poster-generate {
   display: flex;
-  height: 100vh;
+  height: 70vh;
   background: #f5f6f8;
 }
+.poster-generate.modal-mode {
+  height: calc(90vh - 60px);
+}
 .side-panel {
-  width: 30%;
+  width: 32%;
   min-width: 320px;
   background: #ffffff;
   border-right: 1px solid #e7e7e7;
@@ -500,6 +505,7 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  overflow: hidden;
 }
 .side-panel .desc {
   color: #777;
@@ -519,14 +525,42 @@ onBeforeUnmount(() => {
   color: #999;
 }
 .poster-tabs {
+  min-height: 0;
   flex: 1;
-  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
+.poster-tabs :deep(.el-tabs__header) {
+  flex-shrink: 0; /* 防止 tab 头部被压缩 */
+}
+.poster-tabs :deep(.el-tabs__content) {
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+.poster-tabs :deep(.el-tab-pane) {
+  height: 100%; 
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.tab-content-scroll {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  min-height: 0;
+}
+
 .example-grid {
+  flex:1;
+  overflow-y: auto;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
-  margin-top: 1rem;
+  padding-right: 1rem 0.5rem 1rem 0;
+  align-content: start;
 }
 .example-card {
   border: 1px solid #e8eaec;
@@ -535,6 +569,7 @@ onBeforeUnmount(() => {
   cursor: pointer;
   background: #fafafa;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  height: fit-content;
 }
 .example-card:hover {
   transform: translateY(-2px);
@@ -548,26 +583,30 @@ onBeforeUnmount(() => {
 }
 .example-card img {
   width: 100%;
-  height: 240px;
+  aspect-ratio: 3 / 4;
   object-fit: cover;
+  display: block;
 }
 .example-card p {
   margin: 0;
   padding: 0.5rem;
   font-size: 12px;
   color: #555;
+  text-align: center;
 }
 .pagination {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  margin-top: 1rem;
+  margin-top: 1rem 0;
+  flex-shrink: 0;
 }
 .chat-panel {
   flex: 1;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 .messages {
   flex: 1;
@@ -637,7 +676,7 @@ onBeforeUnmount(() => {
 }
 .reference-chip {
   display: flex;
-  alignments: center;
+  align-items: center;
   gap: 0.6rem;
   background: #f5f6f8;
   padding: 0.35rem 0.75rem;
@@ -658,7 +697,7 @@ onBeforeUnmount(() => {
 }
 .chip-label {
   font-size: 11px;
-  padding: 0 6 px;
+  padding: 0 6px;
   border-radius: 999px;
   color: #fff;
   align-self: flex-start;

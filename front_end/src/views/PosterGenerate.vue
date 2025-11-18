@@ -1,12 +1,7 @@
 <template>
   <div class="poster-generate modal-mode">
     <aside class="side-panel">
-      <h2>海报生成助手</h2>
-      <p class="desc">选择参考模板或上传图片，帮助 AI 更好理解你的需求。</p>
-      <div class="quota-tip">
-        引用区：{{ referenceImages.length }}/{{ MAX_REFERENCE_IMAGES }}
-        <span>引用+底图最多 {{ MAX_REFERENCE_IMAGES }} 张</span>
-      </div>
+      
       <el-tabs v-model="activeTab" class="poster-tabs">
         <el-tab-pane
           v-for="category in posterCategories"
@@ -58,7 +53,7 @@
           </div>
         </div>
       </div>
-      <div class="reference-strip">
+      <div class="reference-strip" v-if="mode === 'reference'">
         <div class="strip-head">
           <div>引用区 <span class="count">{{ referenceImages.length }}/{{ MAX_REFERENCE_IMAGES }}</span></div>
           <span class="strip-note">引用来自模板，底图来自上传</span>
@@ -78,33 +73,77 @@
         <p v-else class="reference-empty">从左侧模板或上传底图添加图片（最多两张）。</p>
       </div>
       <div class="chat-input">
-        <el-input
-          v-model="inputText"
-          type="textarea"
-          :autosize="{ minRows: 2, maxRows: 4 }"
-          placeholder="描述你想要的海报或提出问题"
-        />
+        <div class="mode-toolbar inside">
+          <div class="mode-title">模式</div>
+          <div class="mode-row">
+            <el-select v-model="mode" size="small" class="mode-select">
+              <el-option v-for="opt in modeOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
+            </el-select>
+            <template v-if="mode === 'text'">
+              <el-popover placement="bottom-start" trigger="click" width="360">
+                <template #reference>
+                  <button class="summary-pill outlined">
+                    <span class="pill-ratio">{{ format.ratio }}</span>
+                    <span class="pill-divider"></span>
+                    <span class="pill-size">{{ formatSummary }}</span>
+                  </button>
+                </template>
+                <div class="format-panel">
+                  <div class="format-section">
+                    <p>选择比例</p>
+                    <div class="ratio-options">
+                      <el-button
+                        v-for="ratio in ratios"
+                        :key="ratio"
+                        size="small"
+                        :type="ratio === format.ratio ? 'primary' : 'default'"
+                        @click="selectRatio(ratio)"
+                      >
+                        {{ ratio }}
+                      </el-button>
+                    </div>
+                  </div>
+                  <div class="format-section size-inputs">
+                    <p>尺寸 (px)</p>
+                    <div class="size-row">
+                      <el-input-number v-model="format.width" :min="256" :max="4096" />
+                      <span>×</span>
+                      <el-input-number v-model="format.height" :min="256" :max="4096" />
+                    </div>
+                  </div>
+                </div>
+              </el-popover>
+            </template>
+            <template v-else-if="mode === 'reference'">
+              <el-button
+                class="upload-btn-outlined"
+                :loading="uploading"
+                :disabled="uploading || !canAddMoreImages"
+                @click="triggerImage"
+              >
+                <el-icon><UploadFilled /></el-icon>
+                上传图片
+              </el-button>
+            </template>
+          </div>
+        </div>
+        <div class="input-area">
+          <el-input
+            v-model="inputText"
+            type="textarea"
+            :rows="3"
+            class="fixed-textarea"
+            resize="none"
+            :placeholder="mode === 'art' ? '描述你想生成的艺术字效果' : '描述你想要的海报或提出问题'"
+          />
+        </div>
         <div class="chat-actions">
           <input ref="imageInput" class="hidden-input" type="file" accept="image/*" @change="handleImageSelect" />
-          <el-tooltip content="上传底图" placement="top">
-            <el-button
-              circle
-              text
-              class="icon-button"
-              :loading="uploading"
-              :disabled="uploading || !canAddMoreImages"
-              @click="triggerImage"
-            >
-              <el-icon>
-                <UploadFilled />
-              </el-icon>
-            </el-button>
-          </el-tooltip>
           <el-button
             type="primary"
             @click="sendMessage"
             :loading="sending"
-            :disabled="sending || (!inputText && !referenceImages.length)"
+            :disabled="sending || !canSend"
           >
             发送
           </el-button>
@@ -117,7 +156,7 @@
 <script lang="ts" setup>
 // 导入依赖
 import posterTemplates from '@/assets/data/poster_templates.json'
-import { computed, nextTick, onBeforeUnmount, reactive, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Close, UploadFilled } from '@element-plus/icons-vue'
 import appConfig from '@/config'
@@ -158,10 +197,12 @@ interface SelectedPosterImage {
   kind: ImageKind
   fileKey?: string
   ossUrl?: string
+  source: 'template' | 'upload'
 }
 
 // 常量定义
 const MAX_REFERENCE_IMAGES = 2
+const TEMPLATES_PER_PAGE = 6
 const POLL_INTERVAL = 5000
 const DEFAULT_OSS_FOLDER = 'poster/base'
 const apiHost = appConfig.API_URL && appConfig.API_URL.trim().length
@@ -196,6 +237,25 @@ const messages = reactive<ChatMessage[]>([
 ])
 
 const inputText = ref('')
+const modeOptions = [
+  { label: '文生图', value: 'text' },
+  { label: '参考图生成', value: 'reference' },
+  { label: '艺术字生成', value: 'art' },
+]
+const mode = ref<'text' | 'reference' | 'art'>('text')
+const ratios = ['21:9', '16:9', '3:2', '4:3', '1:1', '3:4', '2:3', '9:16']
+const ratioSizeMap: Record<string, { width: number; height: number }> = {
+  '1:1': { width: 2048, height: 2048 },
+  '4:3': { width: 2304, height: 1728 },
+  '3:2': { width: 2496, height: 1664 },
+  '16:9': { width: 2560, height: 1440 },
+  '21:9': { width: 3024, height: 1296 },
+}
+const format = reactive({
+  ratio: '16:9',
+  width: 1024,
+  height: 768,
+})
 const sending = ref(false)
 const uploading = ref(false)
 const imageInput = ref<HTMLInputElement | null>(null)
@@ -213,17 +273,40 @@ const currentCategory = computed(() => posterCategories.find((cat) => cat.id ===
 const currentPage = computed(() => (currentCategory.value ? pageMap[currentCategory.value.id] : 1))
 const totalPages = computed(() => {
   const examples = currentCategory.value?.examples || []
-  return Math.max(1, Math.ceil(examples.length / 8)) // 每页显示8个（因卡片放大调整）
+  return Math.max(1, Math.ceil(examples.length / TEMPLATES_PER_PAGE))
 })
 const displayedExamples = computed(() => {
   const cat = currentCategory.value
   if (!cat) return []
   const page = currentPage.value
-  const start = (page - 1) * 8 // 每页显示8个
-  return cat.examples.slice(start, start + 8)
+  const start = (page - 1) * TEMPLATES_PER_PAGE
+  return cat.examples.slice(start, start + TEMPLATES_PER_PAGE)
 })
 
 const canAddMoreImages = computed(() => referenceImages.value.length < MAX_REFERENCE_IMAGES)
+const canSend = computed(() => {
+  const text = inputText.value.trim()
+  if (mode.value === 'reference') {
+    return !!(text || referenceImages.value.length)
+  }
+  return !!text
+})
+
+watch(mode, (val) => {
+  if (val !== 'reference') {
+    referenceImages.value = []
+  }
+})
+
+const formatSummary = computed(() => `${format.width}×${format.height}px`)
+
+const selectRatio = (ratio: string) => {
+  format.ratio = ratio
+  if (ratioSizeMap[ratio]) {
+    format.width = ratioSizeMap[ratio].width
+    format.height = ratioSizeMap[ratio].height
+  }
+}
 const router = useRouter()
 const widgetStore = useWidgetStore()
 
@@ -252,11 +335,21 @@ const ensureImageQuota = () => {
 
 const addImageToStrip = (payload: Omit<SelectedPosterImage, 'id'>) => {
   referenceImages.value.unshift({ ...payload, id: crypto.randomUUID() })
+  referenceImages.value = referenceImages.value.slice(0, MAX_REFERENCE_IMAGES)
 }
 
 const handleExampleSelect = (example: PosterExample) => {
   if (!ensureImageQuota()) return
-  addImageToStrip({ src: example.cover, remote: example.cover, title: example.title, kind: 'reference' })
+  if (mode.value !== 'reference') {
+    ElMessage.warning('此模式下不需要参考图，请切换到参考图生成')
+    return
+  }
+  const hasTemplate = referenceImages.value.some((img) => img.source === 'template')
+  if (hasTemplate) {
+    ElMessage.warning('模板参考图只能选择一张，请上传底图')
+    return
+  }
+  addImageToStrip({ src: example.cover, remote: example.cover, title: example.title, kind: 'reference', source: 'template' })
 }
 
 const triggerImage = () => {
@@ -275,7 +368,9 @@ const handleImageSelect = async (event: Event) => {
   uploading.value = true
   try {
     const { preview, remote, fileKey } = await uploadBaseImage(files[0])
-    addImageToStrip({ src: preview, remote, title: files[0].name, kind: 'base', fileKey })
+    const hasTemplate = referenceImages.value.some((img) => img.source === 'template')
+    const kind: ImageKind = mode.value === 'reference' && hasTemplate ? 'base' : 'reference'
+    addImageToStrip({ src: preview, remote, title: files[0].name, kind, fileKey, source: 'upload' })
   } catch (error) {
     ElMessage.error(formatError(error))
   } finally {
@@ -572,14 +667,12 @@ onBeforeUnmount(() => {
   padding: 0.5rem 0; /* 统一内边距 */
 }
 
-/* 优化网格布局 */
 .example-grid {
   flex: 1;
   overflow-y: auto;
   display: grid;
-  /* 自动适应列数，最小列宽140px */
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 1rem; /* 调整间距 */
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
   padding: 0.5rem;
   align-content: start;
 }
@@ -761,10 +854,127 @@ onBeforeUnmount(() => {
   font-size: 12px;
   color: #999;
 }
+.mode-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+}
+.mode-toolbar.inside {
+  padding: 0 0 0.75rem;
+}
+.mode-title {
+  font-size: 13px;
+  color: #666;
+}
+.mode-select {
+  width: 160px;
+}
+.format-summary {
+  padding: 0 0 0.5rem;
+}
+.summary-pill {
+  background: #2f323a;
+  border: 1px solid #3f434d;
+  color: #fff;
+  border-radius: 10px;
+  padding: 8px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.summary-pill .pill-ratio {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.pill-divider {
+  width: 1px;
+  height: 14px;
+  background: rgba(255,255,255,0.35);
+  display: inline-block;
+}
+.summary-pill .pill-size {
+  font-weight: 600;
+}
+.summary-pill.outlined {
+  background: #fff;
+  color: #111;
+  border: 1px solid #111;
+}
+.upload-btn-outlined {
+  border: 1px solid #111;
+  color: #111;
+  background: #fff;
+  border-radius: 10px;
+  padding: 6px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.format-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background: #fff;
+  color: #111;
+  border-radius: 12px;
+  border: 1px solid #dcdfe6;
+  padding: 0.75rem;
+}
+.format-section {
+  background: #fff;
+  border: 1px solid #e4e7ed;
+  border-radius: 10px;
+  padding: 0.75rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+.format-section p {
+  margin: 0 0 0.5rem;
+  font-size: 12px;
+  color: #333;
+}
+.ratio-options {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+.ratio-options :deep(.el-button) {
+  background: #fff;
+  border: 1px solid #dcdfe6;
+  color: #333;
+}
+.ratio-options :deep(.el-button.is-active),
+.ratio-options :deep(.el-button.el-button--primary) {
+  background: #4a90e2;
+  border-color: #4a90e2;
+  color: #fff;
+}
+.size-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.size-row span {
+  color: #333;
+  font-size: 12px;
+}
+.size-row :deep(.el-input-number__increase),
+.size-row :deep(.el-input-number__decrease) {
+  background: #f5f7fa;
+  border-color: #dcdfe6;
+  color: #333;
+}
 .chat-input {
   padding: 1rem 1.5rem 1.5rem;
   border-top: 1px solid #e7e7e7;
   background: #fff;
+}
+.input-area .fixed-textarea :deep(.el-textarea__inner) {
+  height: 82px !important;
+  overflow-y: auto;
 }
 .chat-actions {
   display: flex;

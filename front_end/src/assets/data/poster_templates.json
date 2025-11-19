@@ -1,34 +1,210 @@
 [
-  {"url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%202.webp", "type": "产品类", "title": "产品 2"},
-  {"url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%2014.webp", "type": "产品类", "title": "产品 14"},
-  {"url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%2018.webp", "type": "产品类", "title": "产品 18"},
-  {"url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E5%93%81%E7%89%8C%201.webp", "type": "品牌类", "title": "品牌 1"},
-  {"url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%2019.webp", "type": "产品类", "title": "产品 19"},
-  {"url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%2015.webp", "type": "产品类", "title": "产品 15"},
-  {"url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%203.webp", "type": "产品类", "title": "产品 3"},
-  {"url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%208.webp", "type": "产品类", "title": "产品 8"},
-  {"url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E8%8A%82%E6%B0%94%201.webp", "type": "节气类", "title": "节气 1"},
-  {"url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E5%93%81%E7%89%8C%207.webp", "type": "品牌类", "title": "品牌 7"},
-  {"url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%204.webp", "type": "产品类", "title": "产品 4"},
-  {"url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%2012.webp", "type": "产品类", "title": "产品 12"},
-  {"url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%2013.webp", "type": "产品类", "title": "产品 13"},
-  {"url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%205.webp", "type": "产品类", "title": "产品 5"},
-  {"url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E5%93%81%E7%89%8C%206.webp", "type": "品牌类", "title": "品牌 6"},
-  {"url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%209.webp", "type": "产品类", "title": "产品 9"},
-  {"url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E5%93%81%E7%89%8C%205.webp", "type": "品牌类", "title": "品牌 5"},
-  {"url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E8%8A%82%E6%B0%94%203.webp", "type": "节气类", "title": "节气 3"},
-  {"url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E5%93%81%E7%89%8C%209.webp", "type": "品牌类", "title": "品牌 9"},
-  {"url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%2010.webp", "type": "产品类", "title": "产品 10"},
-  {"url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%206.webp", "type": "产品类", "title": "产品 6"},
-  {"url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%207.webp", "type": "产品类", "title": "产品 7"},
-  {"url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%2011.webp", "type": "产品类", "title": "产品 11"},
-  {"url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E5%93%81%E7%89%8C%208.webp", "type": "品牌类", "title": "品牌 8"},
-  {"url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E8%8A%82%E6%B0%94%202.webp", "type": "节气类", "title": "节气 2"},
-  {"url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E5%93%81%E7%89%8C%204.webp", "type": "品牌类", "title": "品牌 4"},
-  {"url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%2016.webp", "type": "产品类", "title": "产品 16"},
-  {"url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E5%93%81%E7%89%8C%203.webp", "type": "品牌类", "title": "品牌 3"},
-  {"url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E8%8A%82%E6%B0%94%204.webp", "type": "节气类", "title": "节气 4"},
-  {"url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E5%93%81%E7%89%8C%202.webp", "type": "品牌类", "title": "品牌 2"},
-  {"url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%201.webp", "type": "产品类", "title": "产品 1"},
-  {"url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%2017.webp", "type": "产品类", "title": "产品 17"}
+  {
+    "url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%202.webp",
+    "type": "产品类",
+    "title": "产品 2"
+  },
+  {
+    "url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%2014.webp",
+    "type": "产品类",
+    "title": "产品 14"
+  },
+  {
+    "url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%2018.webp",
+    "type": "产品类",
+    "title": "产品 18"
+  },
+  {
+    "url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E5%93%81%E7%89%8C%201.webp",
+    "type": "品牌类",
+    "title": "品牌 1"
+  },
+  {
+    "url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%2019.webp",
+    "type": "产品类",
+    "title": "产品 19"
+  },
+  {
+    "url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%2015.webp",
+    "type": "产品类",
+    "title": "产品 15"
+  },
+  {
+    "url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%203.webp",
+    "type": "产品类",
+    "title": "产品 3"
+  },
+  {
+    "url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%208.webp",
+    "type": "产品类",
+    "title": "产品 8"
+  },
+  {
+    "url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E8%8A%82%E6%B0%94%201.webp",
+    "type": "节气类",
+    "title": "节气 1"
+  },
+  {
+    "url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E5%93%81%E7%89%8C%207.webp",
+    "type": "品牌类",
+    "title": "品牌 7"
+  },
+  {
+    "url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%204.webp",
+    "type": "产品类",
+    "title": "产品 4"
+  },
+  {
+    "url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%2012.webp",
+    "type": "产品类",
+    "title": "产品 12"
+  },
+  {
+    "url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%2013.webp",
+    "type": "产品类",
+    "title": "产品 13"
+  },
+  {
+    "url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%205.webp",
+    "type": "产品类",
+    "title": "产品 5"
+  },
+  {
+    "url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E5%93%81%E7%89%8C%206.webp",
+    "type": "品牌类",
+    "title": "品牌 6"
+  },
+  {
+    "url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%209.webp",
+    "type": "产品类",
+    "title": "产品 9"
+  },
+  {
+    "url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E5%93%81%E7%89%8C%205.webp",
+    "type": "品牌类",
+    "title": "品牌 5"
+  },
+  {
+    "url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E8%8A%82%E6%B0%94%203.webp",
+    "type": "节气类",
+    "title": "节气 3"
+  },
+  {
+    "url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E5%93%81%E7%89%8C%209.webp",
+    "type": "品牌类",
+    "title": "品牌 9"
+  },
+  {
+    "url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%2010.webp",
+    "type": "产品类",
+    "title": "产品 10"
+  },
+  {
+    "url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%206.webp",
+    "type": "产品类",
+    "title": "产品 6"
+  },
+  {
+    "url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%207.webp",
+    "type": "产品类",
+    "title": "产品 7"
+  },
+  {
+    "url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%2011.webp",
+    "type": "产品类",
+    "title": "产品 11"
+  },
+  {
+    "url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E5%93%81%E7%89%8C%208.webp",
+    "type": "品牌类",
+    "title": "品牌 8"
+  },
+  {
+    "url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E8%8A%82%E6%B0%94%202.webp",
+    "type": "节气类",
+    "title": "节气 2"
+  },
+  {
+    "url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E5%93%81%E7%89%8C%204.webp",
+    "type": "品牌类",
+    "title": "品牌 4"
+  },
+  {
+    "url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%2016.webp",
+    "type": "产品类",
+    "title": "产品 16"
+  },
+  {
+    "url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E5%93%81%E7%89%8C%203.webp",
+    "type": "品牌类",
+    "title": "品牌 3"
+  },
+  {
+    "url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E8%8A%82%E6%B0%94%204.webp",
+    "type": "节气类",
+    "title": "节气 4"
+  },
+  {
+    "url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E5%93%81%E7%89%8C%202.webp",
+    "type": "品牌类",
+    "title": "品牌 2"
+  },
+  {
+    "url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%201.webp",
+    "type": "产品类",
+    "title": "产品 1"
+  },
+  {
+    "url": "https://ennova-bigdata-test.obsv3.cn-lflt-1.enncloud.cn/video/model/wj/%E4%BA%A7%E5%93%81%2017.webp",
+    "type": "产品类",
+    "title": "产品 17"
+  },
+  {
+    "title": "专属时刻，定格美好",
+    "url": "",
+    "type": "艺术字",
+    "prompt": "黑底白字，主体为现代艺术手写创意字体 “专属时刻，定格美好”；字体笔画融合柔美曲线与锐利直线，曲线飘逸延伸，直线挺拔利落；字形呈横向舒展且略带动态倾斜的布局，字间笔画相互呼应、富有视觉流动感；笔画粗细对比细腻（主笔稳重、辅笔纤细轻盈），线条边缘光滑自然；下方搭配纤细无衬线字体 “Have fun together.”；整体营造 浪漫细腻、心动时的轻盈艺术 氛围，突出字体的曲线韵律、动态布局与中英文风格融合的效果。"
+  },
+  {
+    "title": "山海",
+    "url": "",
+    "type": "艺术字",
+    "prompt": "狂野豪迈的连体书法字“山海”，笔画流畅飘逸，国潮风笔触，极具视觉冲击力，笔画拉长变形出流畅的飞白，黑底白字。"
+  },
+  {
+    "title": "焕新启程 礼敬匠心",
+    "url": "",
+    "type": "艺术字",
+    "prompt": "标题字体设计,文字“焕新启程 礼敬匠心”极具个性和街头感的涂鸦字体，充满力度与不规则感流动的、跳跃的效果，字体大小、排版错落，白色字体，纯黑色背景。LOGO矢量"
+  },
+  {
+    "title": "超级开学季 625学院",
+    "url": "",
+    "type": "艺术字",
+    "prompt": "标题字体设计，大文字“超级开学季 625学院”，小字英文“ZHOUZHOU”，街头涂鸦风格，笔画夸张变形，粗细对比强烈，不规则切割效果，字体流动跳跃，白色带多彩内色，蓝渐变线条装饰，暗蓝色双层厚度，多层描边，开学季元素抽象点缀，纯黑背景"
+  },
+  {
+    "title": "元气满满",
+    "url": "",
+    "type": "艺术字",
+    "prompt": "字体，logo设计，漫画字体，字体内容“元气满满”，漫画纹理，胖嘟嘟可爱感觉，黑色背景。卡通感十足"
+  },
+  {
+    "title": "夏日心跳，即刻启程！",
+    "url": "",
+    "type": "艺术字",
+    "prompt": "字体，logo设计，中文“夏日心跳，即刻启程！”，白色字体，蓝色加粗边线，轻松夏日风格，创意可爱体矢量插画，露营帐篷等小元素穿插字体中，创意字体设计Logo 纯黑背景"
+  },
+  {
+    "title": "森林探险",
+    "url": "",
+    "type": "艺术字",
+    "prompt": "字体设计 “森林探险”，纯黑色背景，自然森林木纹字体，苔藓包裹文字，木质纹理，被藤蔓缠绕，创意写实，大师级构图"
+  },
+  {
+    "title": "夏日海边",
+    "url": "",
+    "type": "艺术字",
+    "prompt": "字体设计，大文字“夏日海边”，英文“Summer”极具个性和街头感的涂鸦字体，充满力度与不规则感流动的、跳跃的效果，多彩字体可以带点渐变,蓝色线条装饰，纯黑色背景，画面干净"
+  }
 ]

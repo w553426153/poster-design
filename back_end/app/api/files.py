@@ -9,6 +9,8 @@ import shutil
 from datetime import datetime
 from pydantic import BaseModel
 import importlib.util
+import urllib.parse
+import mimetypes
 
 OssUploader = None
 oss_path = Path(__file__).resolve().parents[1].parent / 'oss.py'
@@ -60,6 +62,15 @@ async def upload_file(file: UploadFile = File(...)):
             detail=f"Error uploading file: {str(e)}"
         )
 
+@router.options("/{file_path:path}")
+async def options_file(file_path: str):
+    return Response(status_code=204, headers={
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Allow-Headers": "*"
+    })
+
+
 @router.get("/{file_path:path}")
 async def get_file(file_path: str):
     """
@@ -67,7 +78,8 @@ async def get_file(file_path: str):
     
     - **file_path**: Path to the file relative to the uploads directory
     """
-    file_full_path = Path(settings.UPLOAD_FOLDER) / file_path
+    decoded_path = urllib.parse.unquote(file_path)
+    file_full_path = Path(settings.UPLOAD_FOLDER) / decoded_path
     
     # Security check to prevent directory traversal
     try:
@@ -84,10 +96,18 @@ async def get_file(file_path: str):
             detail="File not found"
         )
     
+    headers = {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Allow-Headers": "*",
+        "Access-Control-Expose-Headers": "Content-Disposition",
+    }
+    # If an image extension, serve with correct media type
     return FileResponse(
         file_full_path,
         filename=file_path.split('/')[-1],
-        media_type="application/octet-stream"
+        media_type=mimetypes.guess_type(file_full_path)[0] or "application/octet-stream",
+        headers=headers,
     )
 
 @router.post("/upload-oss")

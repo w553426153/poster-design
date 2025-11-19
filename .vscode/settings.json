@@ -12,5 +12,8 @@
   "scss.validate": false,
   "i18n-ally.localesPaths": [
     "src/languages"
-  ]
+  ],
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  }
 }

@@ -70,6 +70,7 @@ class Upload:
             base_name, ext = os.path.splitext(file_name)
             print(f'file_name: {file_name} and file_path: {file_path} and new_file_name: {base_name}{ext}')
             object_key = os.path.join(remote_path, f'{base_name}{ext}')
+            upload_params = {}
             upload_params['headers'] = {
                     'x-obs-expires': 1
                 }

@@ -114,6 +114,8 @@ export function addWidget(store: TWidgetStore, setting: TdWidgetData) {
   store.selectWidget({
     uuid: store.dWidgets[len - 1].uuid,
   })
+  // 更新当前页面的图层列表
+  updateDWidgets(store)
   canvasStore.reChangeCanvas()
 }
 

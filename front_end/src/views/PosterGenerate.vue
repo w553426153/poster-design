@@ -690,8 +690,12 @@ const addToCanvas = async (url: string) => {
     const setting = JSON.parse(JSON.stringify(wImageSetting))
     setting.url = url
     setting.imgUrl = url
-    setting.width = img.width
-    setting.height = img.height
+    // 设置坐标为(0,0)
+    setting.left = 0
+    setting.top = 0
+    // 宽度固定为100，高度按比例缩放
+    setting.width = 100
+    setting.height = Math.round((img.height / img.width) * 100)
     widgetStore.addWidget(setting, { toTop: true })
     eventBus.emit('closePosterGenerate')
     ElMessage.success('已添加到画布')

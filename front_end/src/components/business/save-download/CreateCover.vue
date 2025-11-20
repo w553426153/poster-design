@@ -16,12 +16,23 @@ import Qiniu from '@/common/methods/QiNiu'
 import { storeToRefs } from 'pinia'
 import { useCanvasStore, useWidgetStore } from '@/store'
 import FontFaceObserver from 'fontfaceobserver'
+import appConfig from '@/config'
 
 // const { dZoom } = useSetupMapGetters(['dZoom'])
 
 const canvasStore = useCanvasStore()
 const widgetStore = useWidgetStore()
 const { dZoom } = storeToRefs(canvasStore)
+
+// 统一构建后端地址，用于 html2canvas 跨域图片代理
+const apiHost =
+  appConfig.API_URL && appConfig.API_URL.trim().length
+    ? appConfig.API_URL
+    : typeof window !== 'undefined'
+      ? window.location.origin
+      : ''
+const apiBase = apiHost.replace(/\/$/, '')
+const html2canvasProxy = `${apiBase}/api/files/proxy`
 
 // props: ['modelValue'],
 // emits: ['update:modelValue'],
@@ -40,7 +51,10 @@ async function createCover(cb: any) {
   // store.dispatch('updateZoom', 100)
 
   const opts = {
-    useCORS: true, // 跨域图片
+    // 使用后端代理跨域图片，避免直接走 CORS 导致图片被拦截
+    proxy: html2canvasProxy,
+    useCORS: false,
+    allowTaint: false,
     scale: 0.2,
   }
   setTimeout(async () => {
@@ -71,7 +85,10 @@ async function createPoster() {
   const fonts = document.fonts
   const opts = {
     backgroundColor: null, // 关闭背景以支持透明图片生成
-    useCORS: true,
+    // 通过后端代理远程图片，避免 CORS 限制导致图片丢失
+    proxy: html2canvasProxy,
+    useCORS: false,
+    allowTaint: false,
     scale: 100 / dZoom.value, // * window.devicePixelRatio
     onclone: (document: any) => fonts.forEach((font) => document.fonts.add(font)),
   }

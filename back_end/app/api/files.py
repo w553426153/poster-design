@@ -1,7 +1,7 @@
 """
 File operations API endpoints
 """
-from fastapi import APIRouter, HTTPException, status, UploadFile, File
+from fastapi import APIRouter, HTTPException, status, UploadFile, File, Response
 from fastapi.responses import FileResponse
 from pathlib import Path
 import os
@@ -11,6 +11,7 @@ from pydantic import BaseModel
 import importlib.util
 import urllib.parse
 import mimetypes
+import requests
 
 OssUploader = None
 oss_path = Path(__file__).resolve().parents[1].parent / 'oss.py'
@@ -61,6 +62,25 @@ async def upload_file(file: UploadFile = File(...)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error uploading file: {str(e)}"
         )
+
+@router.get("/proxy")
+def proxy_image(url: str):
+    parsed = urllib.parse.urlparse(url)
+    if parsed.scheme not in ("http", "https"):
+        raise HTTPException(status_code=400, detail="Unsupported URL scheme")
+    try:
+        resp = requests.get(url, timeout=20, stream=True)
+        resp.raise_for_status()
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Proxy fetch failed: {exc}")
+    headers = {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Allow-Headers": "*",
+    }
+    content_type = resp.headers.get("Content-Type", "application/octet-stream")
+    return Response(content=resp.content, media_type=content_type, headers=headers)
+
 
 @router.options("/{file_path:path}")
 async def options_file(file_path: str):

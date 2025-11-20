@@ -22,6 +22,7 @@ dependencies = [
   "pandas>=2.2,<3.0",
   "tqdm>=4.66,<5.0",
   "esdk-obs-python>=3.22,<4.0",
+  "rembg>=2.0.50,<3.0",
 ]
 
 [tool.uv]

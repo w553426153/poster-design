@@ -5,6 +5,9 @@ export interface PosterTaskPayload {
   references?: string[]
   base_images?: string[]
   gen_num?: number
+  width?: number
+  height?: number
+  mode?: string
 }
 
 export interface PosterTaskResponse {

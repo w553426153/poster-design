@@ -320,7 +320,7 @@ def generate_poster_pic2pic(query: str, image_urls: List[str], gen_num: int = 2)
         }
 
 
-def generate_poster_text2pic(query: str,gen_num: int = 2) -> Dict[str, Any]:
+def generate_poster_text2pic(query: str, gen_num: int = 1, width: int | None = None, height: int | None = None) -> Dict[str, Any]:
     """
     根据文字描述生成海报
     
@@ -337,7 +337,7 @@ def generate_poster_text2pic(query: str,gen_num: int = 2) -> Dict[str, Any]:
         if not query or not isinstance(query, str):
             return {
                 "code": ERROR_CODE,
-                "message": "查询内容不能为空且必须为字符串",
+                "message": "内容不能为空且必须为字符串",
                 "data": None
             }
         
@@ -367,7 +367,7 @@ def generate_poster_text2pic(query: str,gen_num: int = 2) -> Dict[str, Any]:
         
         prompt_text2pic = f"""
 # 任务
-根据提供的文字内容，生成相应的旅游海报。
+根据提供的文字内容，生成相应的图片。
 
 ## 输入
 {query}
@@ -380,8 +380,11 @@ def generate_poster_text2pic(query: str,gen_num: int = 2) -> Dict[str, Any]:
         form = {
             "req_key": "jimeng_t2i_v40",
             "prompt": prompt_text2pic,
-            "force_single": gen_num == 2  # 根据API文档，强制生成单图
+            "force_single": gen_num 
         }
+        if width and height:
+            form["width"] = int(width)
+            form["height"] = int(height)
         
 
         

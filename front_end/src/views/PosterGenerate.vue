@@ -217,7 +217,7 @@ import { ElMessage } from 'element-plus'
 import { Close, UploadFilled, Loading, Download, Plus } from '@element-plus/icons-vue' // 记得导入新图标
 import appConfig from '@/config'
 import apiRequest from '@/utils/axios'
-import { createPosterTask, getPosterTask } from '@/api/poster'
+import { createPosterTask, getPosterTask, PosterTaskPayload } from '@/api/poster'
 import { useRouter } from 'vue-router'
 import { useWidgetStore } from '@/store'
 import wImageSetting from '@/components/modules/widgets/wImage/wImageSetting'
@@ -235,12 +235,14 @@ interface PosterExample {
   id: string
   title: string
   cover: string
+  prompt?: string
 }
 
 interface PosterTemplate {
   url: string
   title: string
   type: string
+  prompt?: string
 }
 
 type ImageKind = 'reference' | 'base'
@@ -273,10 +275,11 @@ const buildPosterCategories = () => {
     产品类: [],
     品牌类: [],
     节气类: [],
+    艺术字: [],
   }
   ;(posterTemplates as PosterTemplate[]).forEach((tpl, idx) => {
     if (groups[tpl.type]) {
-      groups[tpl.type].push({ id: `${tpl.type}-${idx}`, title: tpl.title, cover: tpl.url })
+      groups[tpl.type].push({ id: `${tpl.type}-${idx}`, title: tpl.title, cover: tpl.url, prompt: tpl.prompt })
     }
   })
   return categoryOrder.map((type) => ({
@@ -392,6 +395,11 @@ const addImageToStrip = (payload: Omit<SelectedPosterImage, 'id'>) => {
 }
 
 const handleExampleSelect = (example: PosterExample) => {
+  if (currentCategory.value?.id === '艺术字') {
+    mode.value = 'art'
+    inputText.value = example.prompt || example.title
+    return
+  }
   if (!ensureImageQuota()) return
   if (mode.value !== 'reference') {
     ElMessage.warning('此模式下不需要参考图，请切换到参考图生成')
@@ -466,12 +474,17 @@ const sendMessage = async () => {
       appendMessage({ id: crypto.randomUUID(), role: 'user', type: 'image', content: img.src })
     })
 
-    const payload = {
+    const payload: PosterTaskPayload = {
       prompt: trimmed || '根据当前参考图片生成海报',
       references: snapshot.filter((img) => img.kind === 'reference').map((img) => img.remote),
       base_images: snapshot
         .filter((img) => img.kind === 'base')
         .map((img) => img.ossUrl || img.remote),
+      mode: mode.value,
+    }
+    if (mode.value === 'text') {
+      payload.width = format.width
+      payload.height = format.height
     }
 
     // 插入 loading 状态消息
@@ -641,9 +654,19 @@ const syncBaseImagesToOss = async (images: SelectedPosterImage[]) => {
   }
 }
 
+const normalizeAssetUrl = (url: string) => {
+  if (!url) return url
+  const sameOrigin = url.startsWith(apiBase) || url.startsWith(window.location.origin)
+  if (sameOrigin) return url
+  if (url.startsWith('http')) {
+    return `${apiBase}/api/files/proxy?url=${encodeURIComponent(url)}`
+  }
+  return url
+}
+
 const downloadImage = async (url: string) => {
   try {
-    const res = await fetch(url)
+    const res = await fetch(normalizeAssetUrl(url))
     const blob = await res.blob()
     const link = document.createElement('a')
     link.href = URL.createObjectURL(blob)
@@ -662,7 +685,7 @@ const addToCanvas = async (url: string) => {
   }
   const img = new Image()
   img.crossOrigin = 'anonymous'
-  img.src = url
+  img.src = normalizeAssetUrl(url)
   img.onload = () => {
     const setting = JSON.parse(JSON.stringify(wImageSetting))
     setting.url = url

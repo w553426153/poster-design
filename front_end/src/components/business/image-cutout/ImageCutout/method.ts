@@ -7,43 +7,63 @@
  */
 
 import Qiniu from '@/common/methods/QiNiu'
-import { TCommonUploadCb, TUploadErrorResult } from '@/api/ai'
+import { TCommonUploadCb } from '@/api/ai'
 import { TImageCutoutState } from './index.vue'
 import api from '@/api'
 import { getImage } from '@/common/methods/getImgDetail'
 import _config from '@/config'
 import { Ref } from 'vue'
 
+const apiBaseUrl = _config.API_URL.replace(/\/$/, '')
+
+const buildAbsoluteUrl = (url: string) => {
+  if (!url) {
+    return ''
+  }
+  if (/^https?:\/\//i.test(url)) {
+    return url
+  }
+  return `${apiBaseUrl}${url.startsWith('/') ? '' : '/'}${url}`
+}
+
 /** 选择图片 */
-export const selectImageFile = async (state: TImageCutoutState, raw: Ref<HTMLElement | null>, file: File, successCb?: (result: MediaSource, fileName: string) => void, uploadCb?: TCommonUploadCb) => {
-  // if (file.size > 1024 * 1024 * 2) {
-  //   alert('上传图片超出限制')
-  //   return false
-  // }
+export const selectImageFile = async (state: TImageCutoutState, raw: Ref<HTMLElement | null>, file: File, successCb?: (result: string, fileName: string) => void, uploadCb?: TCommonUploadCb) => {
   if (!raw.value) return
-  // 显示选择的图片
+
   raw.value.addEventListener('load', () => {
     state.offsetWidth = (raw.value as HTMLElement).offsetWidth
   })
-  // TODO: 模拟演示
-  // state.rawImage = 'https://pic.imgdb.cn/item/66be4c1ed9c307b7e9f00b16.jpg' // URL.createObjectURL(file)
-  state.rawImage = 'https://s2.loli.net/2024/08/16/45aIdYbhgSefEoc.jpg'
 
-  // 返回抠图结果
-  // const result = await api.ai.upload(file, (up: number, dp: number) => {
-  //   uploadCb && uploadCb(up, dp)
-  //   if (dp) {
-  //     state.progressText = dp === 100 ? '' : '导入中..'
-  //     state.progress = dp
-  //   } else {
-  //     state.progressText = up < 100 ? '上传中..' : '正在处理，请稍候..'
-  //     state.progress = up < 100 ? up : 0
-  //   }
-  // })
-  // if (typeof result == 'object' && (result as TUploadErrorResult).type !== 'application/json') {
-  // successCb && successCb(result as MediaSource, file.name)
-  // } else alert('服务器繁忙，请稍等下重新尝试~')
-  successCb('', file.name)
+  if (state.rawImage && state.rawImage.startsWith('blob:')) {
+    URL.revokeObjectURL(state.rawImage)
+  }
+  const objectUrl = URL.createObjectURL(file)
+  state.rawImage = objectUrl
+  state.progressText = '上传中..'
+  state.progress = 0
+
+  try {
+    const result = await api.cutout.removeBg(file, (up: number, dp: number) => {
+      uploadCb && uploadCb(up, dp)
+      if (dp) {
+        state.progressText = dp === 100 ? '' : '导入中..'
+        state.progress = dp
+      } else {
+        state.progressText = up < 100 ? '上传中..' : '正在处理，请稍候..'
+        state.progress = up < 100 ? up : 0
+      }
+    })
+
+    const url = buildAbsoluteUrl(result.url || '')
+    state.cutImage = url
+    successCb && successCb(url, file.name)
+    state.progressText = ''
+  } catch (error) {
+    console.error('remove background failed', error)
+    state.progressText = '处理失败，请重试'
+  } finally {
+    state.progress = 0
+  }
 }
 
 export async function uploadCutPhotoToCloud(cutImage: string) {

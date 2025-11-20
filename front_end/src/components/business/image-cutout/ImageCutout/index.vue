@@ -1,19 +1,13 @@
-<!--
- * @Author: ShawnPhang
- * @Date: 2024-03-03 19:00:00
- * @Description: 裁剪组件
- * @LastEditors: ShawnPhang <https://m.palxp.cn>
- * @Date: 2024-03-03 19:00:00
--->
+
 <template>
-  <el-dialog v-model="state.show" title="AI 抠图（模拟演示）" align-center width="650" @close="handleClose">
+  <el-dialog v-model="state.show" title="智能抠图" align-center width="650" @close="handleClose">
     <uploader v-if="!state.rawImage" :hold="true" :drag="true" :multiple="true" class="uploader" @load="handleUploaderLoad">
       <div class="uploader__box">
         <upload-filled style="width: 64px; height: 64px" />
         <!-- <div class="el-upload__text">在此拖入或选择<em>上传图片</em></div> -->
-        <div class="el-upload__text">自动抠图目前依赖后端服务，需自行部署</div>
+        
       </div>
-      <div class="el-upload__tip el-upload__text"><em>体验前端效果演示以及修补编辑器，任意上传一张图片即可触发</em></div>
+      <div class="el-upload__tip el-upload__text"><em>任意上传一张图片</em></div>
     </uploader>
     <el-progress v-if="!state.cutImage && state.progressText" :percentage="state.progress">
       <el-button text>
@@ -105,11 +99,10 @@ defineExpose({
 const handleUploaderLoad = (file: File) => {
   selectImageFile(state as TImageCutoutState, raw, file, (result, name) => {
     fileName = name
-    // TODO: 模拟演示
-    // const resultImage = 'https://pic.imgdb.cn/item/6522253ec458853aefb0b013.webp' // URL.createObjectURL(result)
-    const resultImage = 'https://s2.loli.net/2024/08/16/fSxD9wlpiu3IKJv.png'
-    state.rawImage && (state.cutImage = resultImage)
-    requestAnimationFrame(run)
+    if (result) {
+      state.percent = 0
+      requestAnimationFrame(run)
+    }
   })
 }
 
@@ -126,7 +119,9 @@ const download = () => {
 }
 
 const clear = () => {
-  URL.revokeObjectURL(state.rawImage)
+  if (state.rawImage?.startsWith('blob:')) {
+    URL.revokeObjectURL(state.rawImage)
+  }
   state.rawImage = ''
   state.cutImage = ''
   state.percent = 0
@@ -199,5 +194,3 @@ const edit = () => {
   width: 100%;
 }
 </style>
-
-

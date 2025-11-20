@@ -54,10 +54,4 @@ export default [
     show: false,
     component: 'tools-list-wrap',
   },
-  {
-    name: '我的',
-    icon: 'icon-shangchuan',
-    show: false,
-    component: 'user-wrap',
-  },
 ] as TWidgetClassifyData[]

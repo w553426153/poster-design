@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from .config import settings
-from .api import psd, files, templates, materials, poster
+from .api import psd, files, templates, materials, poster, cutout
 
 app = FastAPI(
     title="Poster Design API",
@@ -24,6 +24,7 @@ app.include_router(files.router, prefix="/api/files", tags=["File Operations"])
 app.include_router(materials.router, tags=["Materials"])
 app.include_router(templates.router, tags=["Templates"])
 app.include_router(poster.router, tags=["Poster"])
+app.include_router(cutout.router, prefix="/api/cutout", tags=["Cutout"])
 
 @app.get("/")
 async def root():

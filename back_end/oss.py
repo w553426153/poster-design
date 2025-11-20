@@ -70,8 +70,11 @@ class Upload:
             base_name, ext = os.path.splitext(file_name)
             print(f'file_name: {file_name} and file_path: {file_path} and new_file_name: {base_name}{ext}')
             object_key = os.path.join(remote_path, f'{base_name}{ext}')
+            upload_params['headers'] = {
+                    'x-obs-expires': 1
+                }
             with open(file_path, 'rb') as f:
-                resp = obs_client.putFile(BASE_BUCKET_NAME, object_key, file_path)
+                resp = obs_client.putFile(BASE_BUCKET_NAME, object_key, file_path,**upload_params)
                 if resp.status < 300:
                     obs_img_url = resp.body.objectUrl
                     print((f"文件上传成功: {json.dumps(resp)}\n  "

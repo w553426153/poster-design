@@ -13,7 +13,7 @@ services:
       - uploads:/app/uploads
     environment:
       - DEBUG=True
-      - CORS_ORIGINS=["http://localhost:8080","http://127.0.0.1:8080"]
+      - CORS_ORIGINS=["http://localhost:8081","http://127.0.0.1:8081"]
       - UPLOAD_FOLDER=/app/uploads
     restart: unless-stopped
     networks:
@@ -24,7 +24,7 @@ services:
       context: ./front_end
       dockerfile: docker/web/Dockerfile
     ports:
-      - "8080:80"
+      - "8081:80"
     depends_on:
       - backend
     restart: unless-stopped

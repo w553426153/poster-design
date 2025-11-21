@@ -24,11 +24,17 @@ COPY back_end/ ./
 # Create uploads directory (default mount target)
 RUN mkdir -p /app/uploads
 
+# Create directory for u2net models and copy pre-downloaded model
+RUN mkdir -p /app/models/.u2net
+COPY back_end/models/u2net.onnx /app/models/.u2net/
+
 # Set environment variables
 ENV PYTHONPATH=/app/back_end
 # Ensure project venv is on PATH
 ENV PATH=/app/back_end/.venv/bin:${PATH}
 ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/4.00/tessdata
+# Set rembg model path to use pre-downloaded model
+ENV U2NET_HOME=/app/models/.u2net
 
 # Expose the port the app runs on
 EXPOSE 8000

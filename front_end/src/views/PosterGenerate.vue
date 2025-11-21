@@ -300,18 +300,22 @@ const modeOptions = [
   { label: '艺术字生成', value: 'art' },
 ]
 const mode = ref<'text' | 'reference' | 'art'>('text')
-const ratios = ['21:9', '16:9', '3:2', '4:3', '1:1', '3:4', '2:3', '9:16']
+const ratios = ['21:9', '16:9', '3:2', '4:3', '1:1', '3:4', '2:3', '9:16','9:21']
 const ratioSizeMap: Record<string, { width: number; height: number }> = {
   '1:1': { width: 2048, height: 2048 },
   '4:3': { width: 2304, height: 1728 },
+  '3:4': { width: 1728, height: 2304 },
   '3:2': { width: 2496, height: 1664 },
+  '2:3': { width: 1664, height: 2496 },
   '16:9': { width: 2560, height: 1440 },
+  '9:16': { width: 1440, height: 2560 },
   '21:9': { width: 3024, height: 1296 },
+  '9:21': { width: 1296, height: 3024},
 }
 const format = reactive({
   ratio: '16:9',
-  width: 1024,
-  height: 768,
+  width: 2560,
+  height: 1440,
 })
 const sending = ref(false)
 const uploading = ref(false)

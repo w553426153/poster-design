@@ -43,6 +43,5 @@ $COMPOSE_CMD up -d
 
 echo ">>> Done."
 echo "Backend: http://<your-server-ip>:8000"
-echo "Frontend: http://<your-server-ip>:8080"
+echo "Frontend: http://<your-server-ip>:8081"
 echo "访问前端地址即可正常使用（前端 /api/* 已反向代理到后端服务）。"
-

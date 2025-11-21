@@ -21,7 +21,8 @@ export interface PosterTaskResponse {
 }
 
 export const createPosterTask = (payload: PosterTaskPayload) =>
-  fetch<PosterTaskResponse>('api/poster/tasks', payload, 'post', {}, { timeout: 180000 })
+  // 实际请求路径: {API_URL}/poster/tasks  =>  /api/poster/tasks
+  fetch<PosterTaskResponse>('poster/tasks', payload, 'post', {}, { timeout: 180000 })
 
 export const getPosterTask = (taskId: string) =>
-  fetch<PosterTaskResponse>(`api/poster/tasks/${taskId}`, {}, 'get')
+  fetch<PosterTaskResponse>(`poster/tasks/${taskId}`, {}, 'get')

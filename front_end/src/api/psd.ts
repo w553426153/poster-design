@@ -1,8 +1,6 @@
 import fetch from '@/utils/axios'
 import { ElMessage } from 'element-plus'
-
-// API base URL - should be configured based on environment
-const API_BASE_URL = process.env.VUE_APP_API_URL || 'http://localhost:8000/api'
+import appConfig from '@/config'
 
 export interface PSDProcessOptions {
   skipOcr?: boolean
@@ -52,23 +50,19 @@ export const processPSD = async (
   formData.append('return_canvas', 'true')
   
   try {
-    const response = await fetch<PSDProcessResponse>(
-      `${API_BASE_URL}/psd/process`,
-      formData,
-      'post',
-      {},
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        onUploadProgress: (progressEvent: ProgressEvent) => {
-          if (onProgress && progressEvent.total) {
-            const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
-            onProgress(progress)
-          }
-        },
-      }
-    )
+    // 走统一的 axios 封装，由 appConfig.API_URL 统一加上 /api 前缀
+    // 实际请求路径: {API_URL}/psd/process => /api/psd/process
+    const response = await fetch<PSDProcessResponse>('psd/process', formData, 'post', {}, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      onUploadProgress: (progressEvent: ProgressEvent) => {
+        if (onProgress && progressEvent.total) {
+          const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+          onProgress(progress)
+        }
+      },
+    })
     
     if (response.status === 'error') {
       throw new Error(response.message || 'Failed to process PSD file')
@@ -89,7 +83,8 @@ export const processPSD = async (
  */
 export const downloadProcessedFile = (filePath: string, fileName?: string) => {
   try {
-    const url = `${API_BASE_URL}/psd/download/${encodeURIComponent(filePath)}`
+    const apiBase = appConfig.API_URL.replace(/\/$/, '')
+    const url = `${apiBase}/psd/download/${encodeURIComponent(filePath)}`
     const link = document.createElement('a')
     link.href = url
     link.download = fileName || filePath.split('/').pop() || 'processed_file.png'
@@ -109,5 +104,6 @@ export const downloadProcessedFile = (filePath: string, fileName?: string) => {
  * @returns Full URL to access the file
  */
 export const getFileUrl = (filePath: string): string => {
-  return `${API_BASE_URL}/files/${encodeURIComponent(filePath)}`
+  const apiBase = appConfig.API_URL.replace(/\/$/, '')
+  return `${apiBase}/files/${encodeURIComponent(filePath)}`
 }

@@ -12,8 +12,9 @@ function serialize(obj: any) {
   return Object.keys(obj).map(key => `${encodeURIComponent(key)}=${encodeURIComponent(obj[key])}`).join('&');
 }
 
-// const screenshot_url = window.location.protocol + '//' + window.location.host + '/draw'
-export const download = (params: Type.Object = {}) => `${_config.SCREEN_URL}/api/screenshots?${serialize(params)}`
+// 截图服务走统一的 SCREEN_URL 前缀，默认也是 /api
+// 实际请求路径: {SCREEN_URL}/screenshots  =>  /api/screenshots
+export const download = (params: Type.Object = {}) => `${_config.SCREEN_URL}/screenshots?${serialize(params)}`
 
 type IGetTempListParam = {
   search: string

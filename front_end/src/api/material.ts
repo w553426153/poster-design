@@ -146,5 +146,7 @@ export const upload = ({ file, folder = 'user' }: any, cb: Function) => {
       cb(100, Math.floor((progress.loaded / progress.total) * 100))
     },
   }
-  return fetch(`${_config.SCREEN_URL}/api/file/upload`, formData, 'post', {}, extra)
+  // 统一走后端 /api/files/upload 接口，由 axios 拦截器 + API_URL 处理
+  // 实际请求路径: {API_URL}/upload  =>  /api/files/upload
+  return fetch('files/upload', formData, 'post', {}, extra)
 }

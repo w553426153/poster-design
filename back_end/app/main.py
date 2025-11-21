@@ -21,8 +21,8 @@ app.add_middleware(
 # Include routers
 app.include_router(psd.router, prefix="/api/psd", tags=["PSD Processing"])
 app.include_router(files.router, prefix="/api/files", tags=["File Operations"])
-app.include_router(materials.router, tags=["Materials"])
-app.include_router(templates.router, tags=["Templates"])
+app.include_router(materials.router, prefix="/api", tags=["Materials"])
+app.include_router(templates.router, prefix="/api", tags=["Templates"])
 app.include_router(poster.router, tags=["Poster"])
 app.include_router(cutout.router, prefix="/api/cutout", tags=["Cutout"])
 

@@ -25,5 +25,7 @@ export const removeBg = (file: File, cb?: TCommonUploadCb) => {
         },
       }
     : {}
-  return fetch<RemoveBgResponse>('api/cutout/remove-bg', formData, 'post', {}, extra)
+  // 统一走 /api 前缀，由 axios 拦截器 + config.API_URL 处理
+  // 实际请求路径: {API_URL}/cutout/remove-bg  =>  /api/cutout/remove-bg
+  return fetch<RemoveBgResponse>('cutout/remove-bg', formData, 'post', {}, extra)
 }

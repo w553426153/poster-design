@@ -106,6 +106,64 @@ class Upload:
             print(f"获取Bucket时出错: {e}")
         return obs_client, mybucket
 
+    def upload_directory_images_multithreaded(self, directory_path, remote_path=BASE_SAVE_PATH, max_workers=5):
+        """
+        多线程上传指定目录下的所有图片文件(JPG/PNG)到OSS
+
+        参数:
+        directory_path: 包含图片文件的目录路径
+        remote_path: OSS上的远程存储路径
+        max_workers: 最大线程数
+
+        返回:
+        包含所有成功上传的图片文件的OSS URL列表
+        """
+        if not os.path.exists(directory_path) or not os.path.isdir(directory_path):
+            print(f"目录不存在或不是有效目录: {directory_path}")
+            return []
+
+        # 获取目录中的所有图片文件(JPG/PNG)
+        image_files = []
+        for file in os.listdir(directory_path):
+            file_path = os.path.join(directory_path, file)
+            if os.path.isfile(file_path):
+                _, ext = os.path.splitext(file)
+                if ext.lower() in ['.jpg', '.jpeg', '.png']:
+                    image_files.append(file_path)
+
+        if not image_files:
+            print(f"目录中没有找到图片文件: {directory_path}")
+            return []
+
+        print(f"在目录中找到 {len(image_files)} 个图片文件")
+
+        # 存储成功上传的OSS URL
+        oss_urls = []
+
+        # 使用线程池并发上传
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # 提交所有上传任务
+            future_to_file = {
+                executor.submit(self.upload_file, file_path, remote_path): file_path
+                for file_path in image_files
+            }
+
+            # 处理上传结果
+            for future in tqdm(as_completed(future_to_file), total=len(future_to_file), desc="上传进度"):
+                file_path = future_to_file[future]
+                try:
+                    oss_url = future.result()
+                    if oss_url:
+                        oss_urls.append(oss_url)
+                        print(f"文件上传成功: {os.path.basename(file_path)} -> {oss_url}")
+                    else:
+                        print(f"文件上传失败: {os.path.basename(file_path)}")
+                except Exception as e:
+                    print(f"上传文件时出错 {os.path.basename(file_path)}: {e}")
+
+        print(f"所有图片文件上传完成，成功上传 {len(oss_urls)}/{len(image_files)} 个文件")
+        return oss_urls
+
     def upload_directory_jpgs_multithreaded(self, directory_path, remote_path=BASE_SAVE_PATH, max_workers=5):
         """
         多线程上传指定目录下的所有JPG文件到OSS

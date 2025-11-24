@@ -9,7 +9,7 @@ import axios, { AxiosRequestConfig, AxiosResponse, AxiosStatic } from 'axios'
 import app_config, { LocalStorageKey } from '@/config'
 import { useBaseStore, useUserStore } from '@/store/index';
 
-axios.defaults.timeout = 30000
+axios.defaults.timeout = 180000
 // axios.defaults.headers.authorization = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MTAwMDEsImV4cCI6MTc4ODU3NDc1MDU4NX0.L_t6DFD48Dm6rUPfgIgOWJkz18En1m_-hhMHcpbxliY';
 const defaultToken = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MTAwMDEsImV4cCI6MTc4ODU3NDc1MDU4NX0.L_t6DFD48Dm6rUPfgIgOWJkz18En1m_-hhMHcpbxliY';
 // const version = app_config.VERSION;

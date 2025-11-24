@@ -17,7 +17,7 @@ def _build_public_url(relative_path: str) -> str:
     cleaned = relative_path.replace('\\', '/')
     if not cleaned.startswith('/'):
         cleaned = '/' + cleaned
-    return f"/api/files{cleaned}"
+    return f"/files{cleaned}"
 
 
 @router.post("/remove-bg")

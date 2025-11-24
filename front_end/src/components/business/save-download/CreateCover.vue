@@ -32,7 +32,7 @@ const apiHost =
       ? window.location.origin
       : ''
 const apiBase = apiHost.replace(/\/$/, '')
-const html2canvasProxy = `${apiBase}/api/files/proxy`
+const html2canvasProxy = `${apiBase}/files/proxy`
 
 // props: ['modelValue'],
 // emits: ['update:modelValue'],

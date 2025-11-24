@@ -15,6 +15,10 @@ COPY back_end/pyproject.toml ./
 # If you also commit a lockfile, uncomment next line for reproducible builds
 # COPY back_end/uv.lock ./
 
+# Configure uv to use Chinese mirror sources
+ENV UV_INDEX_URL=https://mirrors.aliyun.com/pypi/simple/
+ENV UV_EXTRA_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple/
+
 # Install dependencies into a local .venv (no dev deps)
 RUN uv sync --no-dev
 
@@ -40,4 +44,4 @@ ENV U2NET_HOME=/app/models/.u2net
 EXPOSE 8000
 
 # Command to run the application
-CMD ["sh", "-lc", "[ -d .venv ] || uv sync --no-dev; uv run uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+CMD ["sh", "-lc", "[ -d .venv ] || UV_INDEX_URL=https://mirrors.aliyun.com/pypi/simple/ UV_EXTRA_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple/ uv sync --no-dev; uv run uvicorn app.main:app --host 0.0.0.0 --port 8000"]

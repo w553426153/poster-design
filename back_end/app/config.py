@@ -20,7 +20,7 @@ class Settings(BaseSettings):
 
     # File upload settings
     UPLOAD_FOLDER: str = str(Path(__file__).parent.parent / "uploads")
-    MAX_CONTENT_LENGTH: int = 16 * 1024 * 1024  # 16MB max upload size
+    MAX_CONTENT_LENGTH: int = 30 * 1024 * 1024  # 16MB max upload size
     ALLOWED_EXTENSIONS: Set[str] = {"psd"}
 
     # PSD processing settings

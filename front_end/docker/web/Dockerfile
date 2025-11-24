@@ -7,8 +7,7 @@ WORKDIR /usr/src/app
 COPY ./ ./
 
 
-RUN npm i --registry=https://registry.npmmirror.com
-
+RUN npm install --platform=linux --arch=x64 --registry=https://registry.npmmirror.com
 
 RUN npm run build
 

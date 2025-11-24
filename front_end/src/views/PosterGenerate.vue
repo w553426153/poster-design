@@ -545,14 +545,14 @@ const sendMessage = async () => {
 const uploadBaseImage = async (file: File) => {
   const formData = new FormData()
   formData.append('file', file)
-  const response = await apiRequest<{ status: string; file_path?: string; message?: string }>('api/files/upload', formData, 'post')
+  const response = await apiRequest<{ status: string; file_path?: string; message?: string }>('files/upload', formData, 'post')
   if (!response || response.status !== 'success' || !response.file_path) {
     throw new Error(response?.message || '上传失败')
   }
   const preview = await fileToDataUrl(file)
   return {
     preview,
-    remote: `${apiBase}/api/files/${response.file_path}`,
+    remote: `${apiBase}/files/${response.file_path}`,
     fileKey: response.file_path,
   }
 }
@@ -643,7 +643,7 @@ const syncBaseImagesToOss = async (images: SelectedPosterImage[]) => {
   if (!pending.length) return
   for (const img of pending) {
     const resp = await apiRequest<{ status: string; oss_url?: string; message?: string }>(
-      'api/files/upload-oss',
+      'files/upload-oss',
       { file_path: img.fileKey, remote_path: DEFAULT_OSS_FOLDER },
       'post',
     )
@@ -663,7 +663,7 @@ const normalizeAssetUrl = (url: string) => {
   const sameOrigin = url.startsWith(apiBase) || url.startsWith(window.location.origin)
   if (sameOrigin) return url
   if (url.startsWith('http')) {
-    return `${apiBase}/api/files/proxy?url=${encodeURIComponent(url)}`
+    return `${apiBase}/files/proxy?url=${encodeURIComponent(url)}`
   }
   return url
 }

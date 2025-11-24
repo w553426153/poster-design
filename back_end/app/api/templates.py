@@ -8,7 +8,7 @@ import uuid
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
-TEMPLATE_FILE = DATA_DIR / "templates.json"
+TEMPLATE_FILE = DATA_DIR / "templates_updated.json"
 
 def _load_store() -> Dict[str, Any]:
     if TEMPLATE_FILE.exists():

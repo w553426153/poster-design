@@ -23,6 +23,8 @@ services:
     build:
       context: ./front_end
       dockerfile: docker/web/Dockerfile
+      args:
+        - NODE_REGISTRY=https://registry.npmmirror.com
     ports:
       - "8081:80"
     depends_on:

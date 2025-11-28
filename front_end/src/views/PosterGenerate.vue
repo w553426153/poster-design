@@ -2,9 +2,9 @@
   <div class="poster-generate modal-mode">
     <aside class="side-panel">
       <div class="panel-header">
-        <h3>模版库</h3>
-        <span class="subtitle">点击图片引用风格</span>
-      </div>
+    <h3>模版库</h3>
+    <span class="subtitle">点击图片引用风格（非艺术字模板会自动切换到参考图模式）</span>
+  </div>
       
       <el-tabs v-model="activeTab" class="poster-tabs" stretch>
         <el-tab-pane
@@ -111,7 +111,7 @@
       <div class="reference-strip" v-if="mode === 'reference'">
         <div class="strip-head">
           <div>引用区 <span class="count">{{ referenceImages.length }}/{{ MAX_REFERENCE_IMAGES }}</span></div>
-          <span class="strip-note">引用来自模板，底图来自上传</span>
+          <span class="strip-note">引用图来自模板，底图来自上传</span>
         </div>
         <div v-if="referenceImages.length" class="reference-list">
           <div class="reference-chip" v-for="img in referenceImages" :key="img.id">
@@ -125,7 +125,7 @@
             </div>
           </div>
         </div>
-        <p v-else class="reference-empty">从左侧模板或上传底图添加图片（最多两张）。</p>
+        <p v-else class="reference-empty">从左侧模板选择引用图或上传底图添加图片（最多两张）。</p>
       </div>
 
       <div class="chat-input">
@@ -190,7 +190,7 @@
             :rows="3"
             class="fixed-textarea"
             resize="none"
-            :placeholder="mode === 'art' ? '描述你想生成的艺术字效果' : '描述你想要的海报或提出问题'"
+            :placeholder="mode === 'art' ? '字体，logo设计，漫画字体，字体内容“元气满满”，漫画纹理，胖嘟嘟可爱感觉，黑色背景。卡通感十足' : '[主体描述] + [场景与环境] + [构图与视角] + [画风与质量]:全景镜头，一条雄伟的、覆盖着水晶鳞片的东方龙在月光下的云层中盘旋，背景是崎岖的山脉和古老的松树，仰视视角，动态感，宏伟壮观，中国水墨画风格，水墨渲染，留白，意境深远，杰作'"
           />
         </div>
         <div class="chat-actions">
@@ -268,13 +268,17 @@ const apiHost = appConfig.API_URL && appConfig.API_URL.trim().length
   : (typeof window !== 'undefined' ? window.location.origin : '')
 const apiBase = apiHost.replace(/\/$/, '')
 
-const categoryOrder = ['产品类', '品牌类', '节气类', '艺术字']
+const categoryOrder = ['餐厅种草', '风景', '酒旅', '酒店','节假日纪实','节假日国潮','活动','艺术字']
 
 const buildPosterCategories = () => {
   const groups: Record<string, PosterExample[]> = {
-    产品类: [],
-    品牌类: [],
-    节气类: [],
+    餐厅种草: [],
+    风景: [],
+    酒旅: [],
+    酒店: [],
+    节假日纪实: [],
+    节假日国潮: [],
+    活动: [],
     艺术字: [],
   }
   ;(posterTemplates as PosterTemplate[]).forEach((tpl, idx) => {
@@ -343,6 +347,7 @@ const canAddMoreImages = computed(() => referenceImages.value.length < MAX_REFER
 const canSend = computed(() => {
   const text = inputText.value.trim()
   if (mode.value === 'reference') {
+    // 参考图生成模式下，可以只有文字、只有图片或两者都有
     return !!(text || referenceImages.value.length)
   }
   return !!text
@@ -404,11 +409,15 @@ const handleExampleSelect = (example: PosterExample) => {
     inputText.value = example.prompt || example.title
     return
   }
-  if (!ensureImageQuota()) return
+  
+  // 点击非艺术字模板时，自动切换到参考图生成模式
   if (mode.value !== 'reference') {
-    ElMessage.warning('此模式下不需要参考图，请切换到参考图生成')
-    return
+    mode.value = 'reference'
   }
+  
+  if (!ensureImageQuota()) return
+  
+  // 模板图片作为引用图
   const hasTemplate = referenceImages.value.some((img) => img.source === 'template')
   if (hasTemplate) {
     ElMessage.warning('模板参考图只能选择一张，请上传底图')
@@ -433,8 +442,8 @@ const handleImageSelect = async (event: Event) => {
   uploading.value = true
   try {
     const { preview, remote, fileKey } = await uploadBaseImage(files[0])
-    const hasTemplate = referenceImages.value.some((img) => img.source === 'template')
-    const kind: ImageKind = mode.value === 'reference' && hasTemplate ? 'base' : 'reference'
+    // 在参考图生成模式下，上传的图片始终作为底图
+    const kind: ImageKind = mode.value === 'reference' ? 'base' : 'reference'
     addImageToStrip({ src: preview, remote, title: files[0].name, kind, fileKey, source: 'upload' })
   } catch (error) {
     ElMessage.error(formatError(error))
@@ -463,7 +472,11 @@ const loadMore = () => {
 const sendMessage = async () => {
   const trimmed = inputText.value.trim()
   if (!trimmed && !referenceImages.value.length) {
-    ElMessage.warning('请输入内容或选择参考图')
+    if (mode.value === 'reference') {
+      ElMessage.warning('请输入内容或选择参考图')
+    } else {
+      ElMessage.warning('请输入内容')
+    }
     return
   }
   if (sending.value) return

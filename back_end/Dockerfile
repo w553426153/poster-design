@@ -2,8 +2,15 @@ FROM ghcr.io/astral-sh/uv:python3.11-bookworm
 
 WORKDIR /app/back_end
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# 使用阿里云镜像源加速依赖安装
+RUN rm -rf /etc/apt/sources.list /etc/apt/sources.list.d/* && \
+    mkdir -p /etc/apt && \
+    echo 'deb http://mirrors.aliyun.com/debian bookworm main contrib non-free non-free-firmware' > /etc/apt/sources.list && \
+    echo 'deb http://mirrors.aliyun.com/debian bookworm-updates main contrib non-free non-free-firmware' >> /etc/apt/sources.list && \
+    echo 'deb http://mirrors.aliyun.com/debian-security bookworm-security main contrib non-free non-free-firmware' >> /etc/apt/sources.list && \
+    apt-get clean && \
+    apt-get update -o Dir::Etc::sourcelist="sources.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0" -o Acquire::Check-Valid-Until=false -o Acquire::ForceIPv4=true && \
+    apt-get install -y --no-install-recommends \
     tesseract-ocr \
     tesseract-ocr-chi-sim \
     tesseract-ocr-chi-tra \

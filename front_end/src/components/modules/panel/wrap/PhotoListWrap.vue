@@ -33,6 +33,7 @@ import { ref, reactive } from 'vue'
 import { useControlStore, useCanvasStore, useWidgetStore } from '@/store'
 import { storeToRefs } from 'pinia'
 import wImageSetting from '../../widgets/wImage/wImageSetting'
+import { genId } from '@/utils/uuid'
 
 const fileInput = ref<HTMLInputElement | null>(null)
 const controlStore = useControlStore()
@@ -81,7 +82,7 @@ const processFile = async (file: File) => {
   setting.top = pH / 2 - height / 2
   widgetStore.addWidget(setting)
 
-  recentImages.unshift({ id: crypto.randomUUID(), src: dataUrl })
+  recentImages.unshift({ id: genId(), src: dataUrl })
   if (recentImages.length > 6) {
     recentImages.pop()
   }

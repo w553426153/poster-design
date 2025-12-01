@@ -222,6 +222,7 @@ import { useRouter } from 'vue-router'
 import { useWidgetStore } from '@/store'
 import wImageSetting from '@/components/modules/widgets/wImage/wImageSetting'
 import eventBus from '@/utils/plugins/eventBus'
+import { genId } from '@/utils/uuid'
 
 // 类型定义
 interface ChatMessage {
@@ -294,7 +295,12 @@ const buildPosterCategories = () => {
 }
 
 const messages = reactive<ChatMessage[]>([
-  { id: crypto.randomUUID(), role: 'ai', type: 'text', content: '你好，我是海报生成助手。告诉我你的想法或上传参考图，我会给出建议。' },
+  {
+    id: genId(),
+    role: 'ai',
+    type: 'text',
+    content: '你好，我是海报生成助手。告诉我你的想法或上传参考图，我会给出建议。',
+  },
 ])
 
 const inputText = ref('')
@@ -399,7 +405,7 @@ const ensureImageQuota = () => {
 }
 
 const addImageToStrip = (payload: Omit<SelectedPosterImage, 'id'>) => {
-  referenceImages.value.unshift({ ...payload, id: crypto.randomUUID() })
+  referenceImages.value.unshift({ ...payload, id: genId() })
   referenceImages.value = referenceImages.value.slice(0, MAX_REFERENCE_IMAGES)
 }
 
@@ -485,10 +491,10 @@ const sendMessage = async () => {
   try {
     await syncBaseImagesToOss(snapshot)
     if (trimmed) {
-      appendMessage({ id: crypto.randomUUID(), role: 'user', type: 'text', content: trimmed })
+      appendMessage({ id: genId(), role: 'user', type: 'text', content: trimmed })
     }
     snapshot.forEach((img) => {
-      appendMessage({ id: crypto.randomUUID(), role: 'user', type: 'image', content: img.src })
+      appendMessage({ id: genId(), role: 'user', type: 'image', content: img.src })
     })
 
     const payload: PosterTaskPayload = {
@@ -506,7 +512,7 @@ const sendMessage = async () => {
 
     // 插入 loading 状态消息
     const statusId = appendMessage({
-      id: crypto.randomUUID(),
+      id: genId(),
       role: 'ai',
       type: 'loading', // 使用 loading 类型
       content: '正在提交任务...',
@@ -530,7 +536,7 @@ const sendMessage = async () => {
       const target = messages.find(m => m.id === statusId)
       if(target) target.type = 'text'
       
-      directUrls.forEach((url) => appendMessage({ id: crypto.randomUUID(), role: 'ai', type: 'image', content: url }))
+      directUrls.forEach((url) => appendMessage({ id: genId(), role: 'ai', type: 'image', content: url }))
       sending.value = false
       referenceImages.value = []
       return
@@ -605,10 +611,10 @@ const startPollingTask = (taskId: string, statusMessageId: string) => {
         const urls = resp.data?.image_urls || []
         if (urls.length) {
           urls.forEach((url) => {
-            appendMessage({ id: crypto.randomUUID(), role: 'ai', type: 'image', content: url })
+            appendMessage({ id: genId(), role: 'ai', type: 'image', content: url })
           })
         } else {
-          appendMessage({ id: crypto.randomUUID(), role: 'ai', type: 'text', content: '任务完成，但暂未获取到图片。' })
+          appendMessage({ id: genId(), role: 'ai', type: 'text', content: '任务完成，但暂未获取到图片。' })
         }
         sending.value = false
         referenceImages.value = []

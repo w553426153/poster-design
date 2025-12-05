@@ -16,13 +16,21 @@
           <number-input v-model="state.innerElement.height" style="margin-top: 0.5rem" label="高" @finish="(value) => finish('height', value)" />
         </div>
       </el-collapse-item>
-      <el-collapse-item title="设置颜色" name="2">
-        <div v-for="(c, ci) in state.innerElement.colors" :key="ci + 'c'">
-          <color-select v-model="state.innerElement.colors[ci]" @finish="(value) => colorFinish('colors')" />
-        </div>
-        <br />
+      <el-collapse-item title="样式设置" name="2">
         <div class="slide-wrap">
-          <number-slider v-model="state.innerElement.opacity" label="不透明" :step="0.01" :maxValue="1" @finish="(value) => finish('opacity', value)" />
+          <color-select v-model="state.innerElement.fillColor" label="填充颜色" @finish="(value) => finish('fillColor', value)" />
+        </div>
+        <div class="slide-wrap">
+          <color-select v-model="state.innerElement.strokeColor" label="边框颜色" @finish="(value) => finish('strokeColor', value)" />
+        </div>
+        <div class="slide-wrap">
+          <number-input v-model="state.innerElement.strokeWidth" label="描边粗细" @finish="(value) => finish('strokeWidth', value)" />
+        </div>
+        <div class="slide-wrap">
+          <number-input v-model="state.innerElement.radius" label="圆角半径" @finish="(value) => finish('radius', value)" />
+        </div>
+        <div class="slide-wrap">
+          <number-slider v-model="state.innerElement.opacity" label="不透明度" :step="0.01" :maxValue="1" @finish="(value) => finish('opacity', value)" />
         </div>
       </el-collapse-item>
       <br />

@@ -103,20 +103,93 @@ const state = reactive<TState>({
 })
 const pageOptions = { page: 0, pageSize: 20 }
 
+// 将 SVG 字符串转换为可用于 <img> / <el-image> 的 dataURL
+function svgToDataUrl(svg: string) {
+  // 编码 SVG 内容，避免引号等字符导致的解析问题
+  const encoded = encodeURIComponent(svg)
+    .replace(/'/g, '%27')
+    .replace(/"/g, '%22')
+  return `data:image/svg+xml,${encoded}`
+}
+
 onMounted(async () => {
   if (state.types.length <= 0) {
-    // const types = await api.material.getKinds({ type: 2 })
+    // 基础几何形状分类
     state.types = [
-      { cate: 'png', name: '贴纸，图片类型' },
-      { cate: 'svg', name: 'SVG矢量元素，可编辑' },
-      { cate: 'mask', name: '容器Mask，图形遮罩' },
+      { cate: 'basic-shapes', name: '基础几何形状' },
     ]
-    for (const iterator of state.types) {
-      const { list } = await api.material.getList({
-        cate: iterator.cate,
-      })
-      state.showList.push(list)
-    }
+    
+    // 预设的几何形状数据
+    const basicShapes = [
+      {
+        id: 1,
+        title: '正方形',
+        width: 100,
+        height: 100,
+        type: 'svg',
+        model: '{"colors":["#000000"], "strokeColor": "#000000", "strokeWidth": 2, "fillColor": "#ffffff", "radius": 0}',
+        thumb: svgToDataUrl('<svg xmlns="http://www.w3.org/2000/svg" width="90" height="90" viewBox="0 0 100 100"><rect x="0" y="0" width="100" height="100" fill="#ffffff" stroke="#000000" stroke-width="2"/></svg>'),
+        url: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><rect x="0" y="0" width="100" height="100" fill="{{fillColor}}" stroke="{{strokeColor}}" stroke-width="{{strokeWidth}}" rx="{{radius}}" ry="{{radius}}"/></svg>',
+        created_time: new Date().toISOString(),
+        updated_time: new Date().toISOString(),
+        state: 1
+      },
+      {
+        id: 2,
+        title: '圆形',
+        width: 104,
+        height: 104,
+        type: 'svg',
+        model: '{"colors":["#000000"], "strokeColor": "#000000", "strokeWidth": 2, "fillColor": "#ffffff"}',
+        thumb: svgToDataUrl('<svg xmlns="http://www.w3.org/2000/svg" width="90" height="90" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="#ffffff" stroke="#000000" stroke-width="2"/></svg>'),
+        url: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 104 104" preserveAspectRatio="none"><circle cx="52" cy="52" r="50" fill="{{fillColor}}" stroke="{{strokeColor}}" stroke-width="{{strokeWidth}}"/></svg>',
+        created_time: new Date().toISOString(),
+        updated_time: new Date().toISOString(),
+        state: 1
+      },
+      {
+        id: 3,
+        title: '矩形',
+        width: 150,
+        height: 100,
+        type: 'svg',
+        model: '{"colors":["#000000"], "strokeColor": "#000000", "strokeWidth": 2, "fillColor": "#ffffff", "radius": 0}',
+        thumb: svgToDataUrl('<svg xmlns="http://www.w3.org/2000/svg" width="90" height="90" viewBox="0 0 150 100"><rect x="0" y="0" width="150" height="100" fill="#ffffff" stroke="#000000" stroke-width="2"/></svg>'),
+        url: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 100" preserveAspectRatio="none"><rect x="0" y="0" width="150" height="100" fill="{{fillColor}}" stroke="{{strokeColor}}" stroke-width="{{strokeWidth}}" rx="{{radius}}" ry="{{radius}}"/></svg>',
+        created_time: new Date().toISOString(),
+        updated_time: new Date().toISOString(),
+        state: 1
+      },
+      {
+        id: 4,
+        title: '三角形',
+        width: 100,
+        height: 100,
+        type: 'svg',
+        model: '{"colors":["#000000"], "strokeColor": "#000000", "strokeWidth": 2, "fillColor": "#ffffff"}',
+        thumb: svgToDataUrl('<svg xmlns="http://www.w3.org/2000/svg" width="90" height="90" viewBox="0 0 100 100"><polygon points="50,5 95,95 5,95" fill="#ffffff" stroke="#000000" stroke-width="2"/></svg>'),
+        url: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><polygon points="50,0 100,100 0,100" fill="{{fillColor}}" stroke="{{strokeColor}}" stroke-width="{{strokeWidth}}"/></svg>',
+        created_time: new Date().toISOString(),
+        updated_time: new Date().toISOString(),
+        state: 1
+      },
+      {
+        id: 5,
+        title: '椭圆形',
+        width: 154,
+        height: 104,
+        type: 'svg',
+        model: '{"colors":["#000000"], "strokeColor": "#000000", "strokeWidth": 2, "fillColor": "#ffffff"}',
+        thumb: svgToDataUrl('<svg xmlns="http://www.w3.org/2000/svg" width="90" height="90" viewBox="0 0 150 100"><ellipse cx="75" cy="50" rx="73" ry="48" fill="#ffffff" stroke="#000000" stroke-width="2"/></svg>'),
+        url: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 154 104" preserveAspectRatio="none"><ellipse cx="77" cy="52" rx="75" ry="50" fill="{{fillColor}}" stroke="{{strokeColor}}" stroke-width="{{strokeWidth}}"/></svg>',
+        created_time: new Date().toISOString(),
+        updated_time: new Date().toISOString(),
+        state: 1
+      }
+    ]
+    
+    // 添加基础形状到显示列表
+    state.showList.push(basicShapes)
   }
 })
 
@@ -218,7 +291,16 @@ async function selectItem(item: TGetListData) {
   if (item.type === 'mask') {
     setting.mask = item.url
   }
+  
+  // 添加widget
   widgetStore.addWidget(setting)
+  
+  // 确保新添加的形状默认处于可编辑状态
+  setTimeout(() => {
+    // 显示moveable控件，允许拖拽和调整大小
+    controlStore.setShowMoveable(true)
+  }, 100)
+  
   // store.dispatch('addWidget', setting)
 }
 async function dragStart(e: MouseEvent, item: TGetListData) {

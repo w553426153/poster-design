@@ -201,7 +201,14 @@ function loadSvg() {
         // 链接加载方法
     //   },
     // )
-    const svg = Snap.parse(props.params.svgUrl)
+    // 替换SVG模板中的属性值
+    let svgContent = props.params.svgUrl
+    svgContent = svgContent.replace(/\{\{strokeColor\}\}/g, props.params.strokeColor)
+    svgContent = svgContent.replace(/\{\{strokeWidth\}\}/g, props.params.strokeWidth)
+    svgContent = svgContent.replace(/\{\{fillColor\}\}/g, props.params.fillColor)
+    svgContent = svgContent.replace(/\{\{radius\}\}/g, props.params.radius)
+    
+    const svg = Snap.parse(svgContent)
     let svg2 = Snap(svg.node)
         let items = svg2.node.childNodes
         svg2.node.removeAttribute('width')
@@ -228,7 +235,7 @@ function loadSvg() {
             elementFactory(els)
           }
         }
-        // 元素工厂: 遍历元素中是否存在可自定义的颜色属性
+        // 元素工厂: 遍历元素中是否存在可自定义的属性
         function elementFactory(element: Record<string, any>) {
           const attrsColor: Record<string, any> = {}
           try {
@@ -250,6 +257,8 @@ function loadSvg() {
         }
         
         if (widgetRef.value) {
+          // 清空容器，避免重复添加
+          widgetRef.value.innerHTML = ''
           // svg.node.classList.add('svg__box')
           widgetRef.value.appendChild(svg.node)
         }
@@ -324,15 +333,12 @@ function move(payload: Record<string, any>) {
 
 function attrsChange() {
   if (dActiveElement.value?.uuid === props.params.uuid && svgElements) {
-    for (const element of svgElements) {
-      const { item, attrsColor } = element
-      for (const key in attrsColor) {
-        if (Object.hasOwnProperty.call(attrsColor, key)) {
-          const color = props.params.colors[attrsColor[key]]
-          item.setAttribute(key, color)
-        }
-      }
+    // 清空当前SVG容器
+    if (widgetRef.value) {
+      widgetRef.value.innerHTML = ''
     }
+    // 重新加载SVG以更新所有属性
+    loadSvg()
   }
 }
 </script>

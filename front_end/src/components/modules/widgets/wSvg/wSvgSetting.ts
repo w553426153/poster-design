@@ -21,6 +21,9 @@ export type TWSvgSetting = {
     minWidth: number
     minHeight: number
   },
+  strokeColor: string
+  strokeWidth: number
+  fillColor: string
   zoom?: number
   cropEdit?: boolean
   imgUrl?: string
@@ -51,4 +54,7 @@ export const wSvgSetting = {
     minWidth: 10,
     minHeight: 10,
   },
+  strokeColor: '#000000',
+  strokeWidth: 2,
+  fillColor: '#ffffff',
 }

@@ -88,3 +88,5 @@ async def edit_template(payload: TemplatePayload):
     templates.insert(0, new_tpl)
     _save_store(store)
     return {"stat": 1, "id": new_id}
+
+

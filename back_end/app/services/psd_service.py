@@ -35,7 +35,7 @@ class PSDService:
     async def process_psd(
         self, 
         file: UploadFile, 
-        skip_ocr: bool = False,
+        skip_ocr: bool = True,
         output_format: str = 'png',
         return_canvas: bool = False,
         canvas_mode: str = 'leaf',

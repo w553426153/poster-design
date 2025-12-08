@@ -111,7 +111,7 @@ export default defineComponent({
         const response = await processPSD(
           file,
           {
-            skipOcr: false,
+            skipOcr: true,
             outputFormat: 'png'
           },
           (uploadProgress: number) => {

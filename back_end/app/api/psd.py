@@ -15,7 +15,7 @@ psd_service = PSDService()
 @router.post("/process")
 async def process_psd(
     file: UploadFile = File(...),
-    skip_ocr: bool = Form(False),
+    skip_ocr: bool = Form(True),
     output_format: str = Form('png'),
     return_canvas: bool = Form(False),
     canvas_mode: str = Form('leaf'),

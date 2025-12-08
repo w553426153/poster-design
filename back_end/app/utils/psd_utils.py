@@ -17,17 +17,24 @@ class PSDProcessor:
 
     def remove_text_layers_recursive(self, layer, parent=None, parent_layers=None, index=None):
         """
-        Recursively remove all text layers
+        Recursively remove all text layers inside a parent layer.
+        NOTE:
+        - This helper is intended to be called on *group* layers.
+        - Top‑level text layers should be removed by iterating psd._layers
+          (see _remove_all_text_layers).
         """
+        # If this node itself is a text layer, signal caller to delete it
         if hasattr(layer, 'kind') and layer.kind == 'type':
             return True
-        
+
+        # If it's a group, walk children from end to start so deletion is safe
         if hasattr(layer, 'is_group') and layer.is_group():
             for i in range(len(layer) - 1, -1, -1):
                 sub_layer = layer[i]
                 if self.remove_text_layers_recursive(sub_layer, layer, layer._layers, i):
+                    # Delete child text layer
                     del layer._layers[i]
-        
+
         return False
 
     def detect_text_in_image(self, image_data, layer_name: str) -> bool:
@@ -48,13 +55,25 @@ class PSDProcessor:
             print(f"Error in text detection for layer {layer_name}: {str(e)}")
             return False
 
-    def _layer_to_cloud(self, layer) -> Optional[Dict[str, Any]]:
-        """Convert a psd-tools layer to a minimal canvas cloud item for image widgets."""
+    def _layer_to_cloud(self, layer, *, include_hidden_text: bool = True) -> Optional[Dict[str, Any]]:
+        """
+        Convert a psd-tools layer to a minimal canvas cloud item.
+
+        - 普通像素/形状图层 => type: "image"
+        - 文本图层(kind == "type") => type: "text"
+        - 默认会忽略隐藏图层, 但【文本图层】即使被隐藏也会导出,
+          以满足“显示隐藏的文本图层”的需求。
+        """
         try:
+            # Groups are NOT directly converted (grouped mode handles them separately)
             if getattr(layer, 'is_group', lambda: False)():
                 return None
-            # Skip fully hidden layers
-            if hasattr(layer, 'visible') and not layer.visible:
+
+            kind = getattr(layer, 'kind', None)
+            is_text_layer = (kind == 'type')
+
+            # Skip hidden layers, EXCEPT hidden text layers when include_hidden_text=True
+            if hasattr(layer, 'visible') and not layer.visible and not (is_text_layer and include_hidden_text):
                 return None
             # bbox: (x1, y1, x2, y2)
             bbox = getattr(layer, 'bbox', None)
@@ -68,14 +87,46 @@ class PSDProcessor:
             opacity = getattr(layer, 'opacity', 1)
             # psd-tools opacity may be 0..255
             opacity = float(opacity) / 255.0 if opacity and opacity > 1 else float(opacity or 1.0)
-            return {
-                "type": "image",
+
+            base_cloud: Dict[str, Any] = {
                 "width": width,
                 "height": height,
                 "top": int(top),
                 "left": int(left),
                 "opacity": max(0.0, min(opacity, 1.0)),
             }
+
+            # --- Text layer -> text cloud ---
+            if is_text_layer:
+                raw_text = ""
+                # Try several ways to get the text content from psd-tools
+                try:
+                    raw_text = getattr(layer, "text", "") or ""
+                except Exception:
+                    raw_text = ""
+                try:
+                    if (not raw_text) and hasattr(layer, "text_data"):
+                        td = layer.text_data
+                        raw_text = getattr(td, "text", "") or ""
+                except Exception:
+                    pass
+
+                # Normalise line breaks
+                text = (raw_text or "").replace("\r", "\n")
+
+                cloud: Dict[str, Any] = {
+                    "type": "text",
+                    "text": text,
+                }
+                cloud.update(base_cloud)
+                return cloud
+
+            # --- Non-text -> image cloud ---
+            cloud = {
+                "type": "image",
+            }
+            cloud.update(base_cloud)
+            return cloud
         except Exception as e:
             print(f"_layer_to_cloud error: {e}")
             return None
@@ -100,18 +151,21 @@ class PSDProcessor:
             print(f"export_layer_image error: {e}")
             return False
 
-    def _remove_text_images_recursive(self, layer, skip_ocr: bool = False):
-        """Recursively remove image layers that contain text by OCR."""
+    def _remove_text_images_recursive(self, layer):
+        """
+        Recursively remove image layers that contain text by OCR.
+
+        用于 skip_ocr=False 的场景, 将“看起来像文字”的图片图层过滤掉。
+        """
         try:
             if hasattr(layer, 'is_group') and layer.is_group():
                 # Traverse children from end to start so deletion is safe
                 for i in range(len(layer) - 1, -1, -1):
                     sub = layer[i]
-                    self._remove_text_images_recursive(sub, skip_ocr)
+                    self._remove_text_images_recursive(sub)
                 return
-            # Non-group: optionally OCR check
-            if skip_ocr:
-                return
+
+            # 非分组图层，尝试做 OCR 检测
             if hasattr(layer, 'topil'):
                 try:
                     img = layer.topil()
@@ -134,6 +188,31 @@ class PSDProcessor:
                     print(f"OCR check error: {e}")
         except Exception as e:
             print(f"_remove_text_images_recursive error: {e}")
+
+    def _remove_all_text_layers(self, psd) -> None:
+        """
+        Remove ALL text layers (kind == 'type') from the whole PSD tree.
+
+        用于 skip_ocr=False:
+        - 先删除所有文本图层
+        - 再用 OCR 删除“看起来像文本的图片图层”
+        """
+        try:
+            if not hasattr(psd, "_layers"):
+                return
+
+            # 先处理顶层图层
+            for i in range(len(psd._layers) - 1, -1, -1):
+                layer = psd._layers[i]
+                if getattr(layer, "kind", None) == "type":
+                    # 直接删除顶层文本图层
+                    del psd._layers[i]
+                    continue
+                # 递归删除组内文本图层
+                if hasattr(layer, "is_group") and layer.is_group():
+                    self.remove_text_layers_recursive(layer)
+        except Exception as e:
+            print(f"_remove_all_text_layers error: {e}")
 
     def _build_canvas_data_grouped(self, psd, assets_root: str, group_dir: str) -> Dict[str, Any]:
         """
@@ -162,13 +241,15 @@ class PSDProcessor:
 
         # Iterate top-level from bottom to top, insert at head to keep highest at end
         for idx, layer in enumerate(layers):
-            if hasattr(layer, 'visible') and not layer.visible:
-                continue
+            # 不判断图层是否隐藏或者不可见，如果不可见我也不做特殊跳过。张雄反馈
+            # if hasattr(layer, 'visible') and not layer.visible:
+            #     continue
             name_lower = str(getattr(layer, 'name', '')).lower()
             if name_lower in ['background', '背景']:
                 continue
 
             # Build cloud from group's bbox or layer bbox
+            # 分组模式下仍然将元素当成图片来用（不拆出文本），因此不需要文本类型
             cloud = self._layer_to_cloud(layer)
             if not cloud:
                 continue
@@ -231,11 +312,19 @@ class PSDProcessor:
 
         # Export and build clouds
         for idx, layer in enumerate(bottom_layers, start=1):
-            if hasattr(layer, 'visible') and not layer.visible:
-                continue
-            cloud = self._layer_to_cloud(layer)
+            # 不处理图层隐藏的情况（但 _layer_to_cloud 会单独允许隐藏文本图层）
+            # if hasattr(layer, 'visible') and not layer.visible:
+            #     continue
+            cloud = self._layer_to_cloud(layer, include_hidden_text=True)
             if not cloud:
                 continue
+
+            # 文本图层：不再导出为图片，前端用 text widget 渲染
+            if cloud.get("type") == "text":
+                clouds.append(cloud)
+                continue
+
+            # 普通图像图层：导出为 PNG 文件
             safe_name = ''.join(c for c in str(getattr(layer, 'name', 'layer')).strip() if c.isalnum() or c in (' ', '-', '_')).rstrip()
             filename = f"leaf_{idx}_{safe_name}.png"
             rel_path = os.path.join(assets_rel_dir, filename)
@@ -253,19 +342,30 @@ class PSDProcessor:
         }
 
     def process_psd(self, *, input_path: str, output_path: str, skip_ocr: bool = False, return_canvas: bool = False, assets_root: Optional[str] = None, canvas_mode: str = 'leaf') -> Dict[str, Any]:
-        """Process PSD file - remove text layers, optional OCR removal, export flattened image and optionally return canvas data with per-layer images."""
+        """
+        Process PSD file.
+
+        - skip_ocr=True:
+            * 不做任何删除, 保留所有文本图层和图片图层
+            * 解析画布时, 正确区分文本图层(type == 'type') 与 图片图层
+            * 隐藏的文本图层也会导出到 canvas.clouds 中(type: 'text')
+
+        - skip_ocr=False:
+            * 删除所有文本图层(kind == 'type')
+            * 通过 OCR 检测并删除“看起来像文字”的图片图层
+            * 画布中只保留真正的图片元素
+        """
         try:
             # Load PSD file
             psd = PSDImage.open(input_path)
 
-            # Process layers: remove all text-type layers recursively
-            for layer in reversed(psd):
-                self.remove_text_layers_recursive(layer)
-
-            # OCR pass for all image layers recursively (if not skipped)
             if not skip_ocr:
+                # 1) 删除所有文本图层
+                self._remove_all_text_layers(psd)
+
+                # 2) OCR 删除含有文字的图片图层
                 for layer in list(psd):
-                    self._remove_text_images_recursive(layer, skip_ocr=False)
+                    self._remove_text_images_recursive(layer)
 
             # Save the flattened result
             output_dir = os.path.dirname(output_path)

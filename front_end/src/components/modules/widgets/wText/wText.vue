@@ -57,6 +57,7 @@
 import { reactive, toRefs, computed, onUpdated, watch, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { fontMinWithDraw } from '@/utils/widgets/loadFontRule'
+import { getBuiltinFontByValue } from '@/common/methods/fonts'
 import getGradientOrImg from './getGradientOrImg'
 import { wTextSetting } from './wTextSetting'
 import { useForceStore, useHistoryStore, useWidgetStore } from '@/store'
@@ -112,22 +113,43 @@ watch(
     if (state.loading) {
       return
     }
-    let font = nval.fontClass
+    let font = nval.fontClass as any
+
+    // 兼容老数据 / 服务端模板中没有 url 的情况：
+    // 如果当前字体没有 url，但 value 能在内置字体中找到，则自动补全 url 等信息，
+    // 这样就能触发本地 /art 下字体的加载。
+    if (font && !font.url && font.value) {
+      const builtin = getBuiltinFontByValue(font.value)
+      if (builtin) {
+        font.url = builtin.url
+        font.alias = font.alias || builtin.alias
+        font.id = font.id || builtin.id
+        font.oid = font.oid ?? builtin.oid
+      }
+    }
+
     const isDone = font.value === state.loadFontDone
 
     if (font.url && !isDone) {
-      if (font.id && isDraw.value) {
-        state.loading = false
-      }
+      // 如果开启了服务端子集提取，这里不再二次加载
       if (fontMinWithDraw) {
+        state.loading = false
         return
       }
+
       state.loading = !isDraw.value
-      const loadFont = new window.FontFace(font.value, `url(${font.url})`)
-      await loadFont.load()
-      document.fonts.add(loadFont)
-      state.loadFontDone = font.value
-      state.loading = false
+      try {
+        // 为避免特殊字符导致的 CSS 解析问题，这里对 url 做显式引号包裹
+        const src = `url("${font.url}")`
+        const loadFont = new window.FontFace(font.value, src)
+        await loadFont.load()
+        document.fonts.add(loadFont)
+        state.loadFontDone = font.value
+      } catch (e) {
+        console.error('字体加载失败:', font.value, font.url, e)
+      } finally {
+        state.loading = false
+      }
     } else {
       state.loading = false
     }

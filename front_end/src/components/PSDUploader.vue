@@ -16,7 +16,7 @@
       </div>
       <template #tip>
         <div class="el-upload__tip">
-          Only PSD files with a size less than 20MB
+          Only PSD files with a size less than 50MB
         </div>
       </template>
     </el-upload>
@@ -91,9 +91,9 @@ export default defineComponent({
         return false
       }
 
-      // Validate file size (20MB limit)
-      if (raw.size > 20 * 1024 * 1024) {
-        ElMessage.error('File size should not exceed 20MB')
+      // Validate file size (50MB limit)
+      if (raw.size > 50 * 1024 * 1024) {
+        ElMessage.error('File size should not exceed 50MB')
         return false
       }
 
